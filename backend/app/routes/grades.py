@@ -4,7 +4,7 @@ from typing import Optional
 from app.database import get_db
 from app.models.grade import Grade
 from app.models.student import Student
-from app.models.subject import Subject
+from app.models.section import Subject
 from app.models.user import User
 from app.schemas.grade import GradeInput, GradeUpdate, GradeResponse
 from app.services.grading_service import compute_quarterly_grade

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Accounts - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .account-card {
+            background: white; border-radius: 8px; padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .account-card .info { flex: 1; }
+        .account-card .info h4 { margin-bottom: 4px; font-size: 0.95rem; }
+        .account-card .info p { font-size: 0.8rem; color: #718096; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Create Accounts</h1>
+                    <p>Create login accounts for students and teachers</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Create Student Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Search Student by LRN</label>
+                                <input type="text" class="form-control" id="studentLRN" placeholder="Enter LRN..." oninput="searchStudentForAccount()">
+                                <div id="studentAccountResults" style="max-height:150px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:4px;margin-top:5px;display:none;"></div>
+                            </div>
+                            <div id="selectedStudentAccount" style="display:none;background:#f7fafc;padding:10px;border-radius:4px;margin-bottom:15px;"></div>
+                            <input type="hidden" id="selectedStudentIdForAccount">
+                            <button class="btn btn-primary" style="width:100%" onclick="createStudentAccount()">Create Student Account</button>
+                            <p style="margin-top:10px;font-size:0.8rem;color:#718096;">
+                                Username = LRN | Password = LRN
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Create Parent Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Search Student by LRN</label>
+                                <input type="text" class="form-control" id="parentStudentLRN" placeholder="Enter student LRN..." oninput="searchStudentForParent()">
+                                <div id="parentStudentResults" style="max-height:150px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:4px;margin-top:5px;display:none;"></div>
+                            </div>
+                            <div id="selectedParentStudent" style="display:none;background:#f7fafc;padding:10px;border-radius:4px;margin-bottom:15px;"></div>
+                            <input type="hidden" id="selectedStudentIdForParent">
+                            <div class="form-group">
+                                <label>Parent Email</label>
+                                <input type="email" class="form-control" id="parentEmail" placeholder="parent@email.com">
+                            </div>
+                            <button class="btn btn-primary" style="width:100%" onclick="createParentAccount()">Create Parent Account</button>
+                            <p style="margin-top:10px;font-size:0.8rem;color:#718096;">
+                                Username = Email | Password = Child's LRN
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3>Create Teacher Account</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Select Teacher</label>
+                                <select class="form-control" id="teacherSelect">
+                                    <option value="">Select Teacher</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" style="width:100%" onclick="createTeacherAccount()">Create Teacher Account</button>
+                            </div>
+                        </div>
+                        <p style="font-size:0.8rem;color:#718096;">
+                            Username = Employee ID | Password = Employee ID
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3>Created Accounts</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountsTable">
+                                    <tr><td colspan="5" class="text-center text-secondary">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('registrar-accounts');
+
+        async function searchStudentForAccount() {
+            const query = document.getElementById('studentLRN').value;
+            if (query.length < 2) {
+                document.getElementById('studentAccountResults').style.display = 'none';
+                return;
+            }
+            try {
+                const students = await api.get(`/registrar/students?search=${encodeURIComponent(query)}`);
+                const container = document.getElementById('studentAccountResults');
+                container.style.display = 'block';
+                container.innerHTML = students.slice(0, 10).map(s => `
+                    <div style="padding:8px;cursor:pointer;border-bottom:1px solid #e2e8f0;" onclick="selectStudentForAccount(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}', ${s.has_account})">
+                        <strong>${s.lrn}</strong> - ${s.last_name}, ${s.first_name}
+                        ${s.has_account ? '<span class="badge badge-success" style="margin-left:8px;">Has Account</span>' : ''}
+                    </div>
+                `).join('') || '<div style="padding:8px;color:#718096;">No students found</div>';
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function selectStudentForAccount(id, lrn, name, hasAccount) {
+            document.getElementById('selectedStudentIdForAccount').value = id;
+            document.getElementById('studentLRN').value = lrn;
+            document.getElementById('studentAccountResults').style.display = 'none';
+            document.getElementById('selectedStudentAccount').style.display = 'block';
+            document.getElementById('selectedStudentAccount').innerHTML = `
+                <strong>${name}</strong> (LRN: ${lrn})
+                ${hasAccount ? '<br><span style="color:#38a169;">Account already exists</span>' : '<br><span style="color:#d69e2e;">No account yet</span>'}
+            `;
+        }
+
+        async function createStudentAccount() {
+            const studentId = document.getElementById('selectedStudentIdForAccount').value;
+            if (!studentId) {
+                showNotification('Please select a student', 'error');
+                return;
+            }
+            try {
+                const result = await api.post(`/registrar/accounts/create-student?student_id=${studentId}`);
+                showNotification(`Account created! Username: ${result.username}, Password: ${result.password}`);
+                document.getElementById('selectedStudentAccount').style.display = 'none';
+                document.getElementById('studentLRN').value = '';
+                loadAccounts();
+            } catch (err) {
+                showNotification(err.message || 'Error creating account', 'error');
+            }
+        }
+
+        async function searchStudentForParent() {
+            const query = document.getElementById('parentStudentLRN').value;
+            if (query.length < 2) {
+                document.getElementById('parentStudentResults').style.display = 'none';
+                return;
+            }
+            try {
+                const students = await api.get(`/registrar/students?search=${encodeURIComponent(query)}`);
+                const container = document.getElementById('parentStudentResults');
+                container.style.display = 'block';
+                container.innerHTML = students.slice(0, 10).map(s => `
+                    <div style="padding:8px;cursor:pointer;border-bottom:1px solid #e2e8f0;" onclick="selectStudentForParent(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}', '${s.guardian_name || ''}')">
+                        <strong>${s.lrn}</strong> - ${s.last_name}, ${s.first_name}
+                    </div>
+                `).join('') || '<div style="padding:8px;color:#718096;">No students found</div>';
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function selectStudentForParent(id, lrn, name, guardian) {
+            document.getElementById('selectedStudentIdForParent').value = id;
+            document.getElementById('parentStudentLRN').value = lrn;
+            document.getElementById('parentStudentResults').style.display = 'none';
+            document.getElementById('selectedParentStudent').style.display = 'block';
+            document.getElementById('selectedParentStudent').innerHTML = `
+                <strong>${name}</strong> (LRN: ${lrn})<br>
+                <span style="color:#718096;">Guardian: ${guardian || 'Not set'}</span>
+            `;
+        }
+
+        async function createParentAccount() {
+            const studentId = document.getElementById('selectedStudentIdForParent').value;
+            const email = document.getElementById('parentEmail').value;
+            if (!studentId || !email) {
+                showNotification('Please select a student and enter parent email', 'error');
+                return;
+            }
+            try {
+                const result = await api.post(`/registrar/accounts/create-parent?student_id=${studentId}&parent_email=${email}`);
+                showNotification(`Parent account created! Username: ${result.username}, Password: ${result.password}`);
+                document.getElementById('selectedParentStudent').style.display = 'none';
+                document.getElementById('parentStudentLRN').value = '';
+                document.getElementById('parentEmail').value = '';
+                loadAccounts();
+            } catch (err) {
+                showNotification(err.message || 'Error creating parent account', 'error');
+            }
+        }
+
+        async function createTeacherAccount() {
+            const teacherId = document.getElementById('teacherSelect').value;
+            if (!teacherId) {
+                showNotification('Please select a teacher', 'error');
+                return;
+            }
+            try {
+                const result = await api.post(`/registrar/accounts/create-teacher?teacher_id=${teacherId}`);
+                showNotification(`Teacher account created! Username: ${result.username}, Password: ${result.password}`);
+                loadAccounts();
+            } catch (err) {
+                showNotification(err.message || 'Error creating teacher account', 'error');
+            }
+        }
+
+        async function loadTeachers() {
+            try {
+                const teachers = await api.get('/teachers/');
+                const select = document.getElementById('teacherSelect');
+                select.innerHTML = '<option value="">Select Teacher</option>' +
+                    teachers.map(t => `<option value="${t.id}">${t.last_name}, ${t.first_name} (${t.employee_id || 'No ID'})</option>`).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadAccounts() {
+            try {
+                const response = await api.get('/students/');
+                const tbody = document.getElementById('accountsTable');
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Loading...</td></tr>';
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadTeachers();
+    </script>
+</body>
+</html>

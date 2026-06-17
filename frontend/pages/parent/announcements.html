@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .announcement-card {
+            background: white; border-radius: 10px; padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 15px;
+            border-left: 4px solid #2c5282;
+        }
+        .announcement-card h3 { color: #1e3a5f; margin-bottom: 8px; }
+        .announcement-meta { font-size: 0.85rem; color: #718096; margin-bottom: 10px; }
+        .announcement-body { line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Announcements</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div id="announcementsContainer">
+                    <p class="text-secondary">Loading announcements...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('announcements');
+
+        async function loadAnnouncements() {
+            try {
+                const announcements = await api.get('/announcements');
+                const container = document.getElementById('announcementsContainer');
+
+                if (!announcements || announcements.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No announcements at this time.</p>';
+                    return;
+                }
+
+                container.innerHTML = announcements.map(a => `
+                    <div class="announcement-card">
+                        <h3>${a.title}</h3>
+                        <div class="announcement-meta">
+                            Posted by ${a.posted_by || 'Administrator'} | ${formatDateTime(a.created_at)}
+                        </div>
+                        <div class="announcement-body">${a.content}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadAnnouncements();
+    </script>
+</body>
+</html>

@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - JNHS Portal</title>
+    <title>My Dashboard - JNHS Portal</title>
     <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .profile-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            color: white; border-radius: 12px; padding: 30px; margin-bottom: 20px;
+        }
+        .profile-card h2 { margin-bottom: 5px; }
+        .profile-card p { opacity: 0.8; }
+        .grade-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .grade-pass { background: #c6f6d5; color: #276749; }
+        .grade-fail { background: #fed7d7; color: #9b2c2c; }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -13,33 +27,40 @@
             <div class="topbar">
                 <div class="topbar-title">
                     <h1>My Dashboard</h1>
-                    <p>Welcome back, <span id="studentName">Student</span></p>
+                    <p>Welcome, <span id="studentName">Student</span></p>
                 </div>
                 <div class="topbar-actions">
                     <span class="user-info"></span>
                 </div>
             </div>
             <div class="content">
+                <div class="profile-card">
+                    <h2 id="profileName">Loading...</h2>
+                    <p>LRN: <span id="profileLRN">-</span></p>
+                    <p>Grade <span id="profileGrade">-</span> | Section: <span id="profileSection">-</span></p>
+                    <p id="profileTrack" style="display:none;">Track: <span id="profileTrackName">-</span></p>
+                </div>
+
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue">&#9632;</div>
-                        <div class="stat-info">
-                            <h4 id="currentGrade">-</h4>
-                            <p>Current Average</p>
-                        </div>
-                    </div>
                     <div class="stat-card">
                         <div class="stat-icon green">&#9632;</div>
                         <div class="stat-info">
-                            <h4 id="attendanceRate">-</h4>
-                            <p>Attendance Rate</p>
+                            <h4 id="presentCount">0</h4>
+                            <p>Days Present</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="absentCount">0</h4>
+                            <p>Days Absent</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon yellow">&#9632;</div>
                         <div class="stat-info">
-                            <h4 id="currentSection">-</h4>
-                            <p>Current Section</p>
+                            <h4 id="lateCount">0</h4>
+                            <p>Days Tardy</p>
                         </div>
                     </div>
                 </div>
@@ -49,16 +70,16 @@
                         <div class="card-header">
                             <h3>My Grades</h3>
                         </div>
-                        <div class="card-body" id="myGrades">
-                            <p class="text-secondary">Loading...</p>
+                        <div class="card-body" id="gradesContainer">
+                            <p class="text-secondary">Loading grades...</p>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3>Recent Announcements</h3>
+                            <h3>My Schedule</h3>
                         </div>
-                        <div class="card-body" id="myAnnouncements">
-                            <p class="text-secondary">Loading...</p>
+                        <div class="card-body" id="scheduleContainer">
+                            <p class="text-secondary">Loading schedule...</p>
                         </div>
                     </div>
                 </div>
@@ -70,10 +91,99 @@
     <script src="/js/utils.js"></script>
     <script>
         initDashboard('dashboard');
-        const user = Auth.getUser();
-        if (user) {
-            document.getElementById('studentName').textContent = user.username;
+
+        async function loadDashboard() {
+            try {
+                const data = await api.get('/student/dashboard');
+
+                document.getElementById('studentName').textContent = `${data.student.last_name}, ${data.student.first_name}`;
+                document.getElementById('profileName').textContent = `${data.student.last_name}, ${data.student.first_name} ${data.student.middle_name || ''}`;
+                document.getElementById('profileLRN').textContent = data.student.lrn;
+
+                if (data.section) {
+                    document.getElementById('profileGrade').textContent = data.section.grade_level;
+                    document.getElementById('profileSection').textContent = data.section.name;
+                    if (data.section.track) {
+                        document.getElementById('profileTrack').style.display = 'block';
+                        document.getElementById('profileTrackName').textContent = data.section.track;
+                    }
+                }
+
+                document.getElementById('presentCount').textContent = data.attendance.present;
+                document.getElementById('absentCount').textContent = data.attendance.absent;
+                document.getElementById('lateCount').textContent = data.attendance.late;
+
+                loadGrades();
+                loadSchedule();
+            } catch (err) {
+                console.error(err);
+            }
         }
+
+        async function loadGrades() {
+            try {
+                const grades = await api.get('/student/grades');
+                const container = document.getElementById('gradesContainer');
+
+                if (!grades || grades.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No grades recorded yet</p>';
+                    return;
+                }
+
+                const grouped = {};
+                grades.forEach(g => {
+                    if (!grouped[g.subject]) grouped[g.subject] = {};
+                    grouped[g.subject][g.quarter] = g.transmuted_grade;
+                });
+
+                let html = '<table style="width:100%;border-collapse:collapse;">';
+                html += '<tr style="background:#f7fafc;"><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q1</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q2</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q3</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q4</th></tr>';
+
+                Object.keys(grouped).sort().forEach(subject => {
+                    const q = grouped[subject];
+                    html += `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0;">${subject}</td>`;
+                    ['Q1', 'Q2', 'Q3', 'Q4'].forEach(qtr => {
+                        const grade = q[qtr];
+                        if (grade !== undefined && grade !== null) {
+                            const cls = grade >= 75 ? 'grade-pass' : 'grade-fail';
+                            html += `<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;"><span class="grade-badge ${cls}">${grade}</span></td>`;
+                        } else {
+                            html += '<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;">-</td>';
+                        }
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadSchedule() {
+            try {
+                const schedule = await api.get('/student/schedule');
+                const container = document.getElementById('scheduleContainer');
+
+                if (!schedule || schedule.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No schedule assigned</p>';
+                    return;
+                }
+
+                container.innerHTML = schedule.map(s => `
+                    <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+                        <div style="font-weight:600;">${s.subject}</div>
+                        <div style="font-size:0.85rem;color:#718096;">
+                            ${s.teacher} | ${s.schedule || 'TBA'} | ${s.room || 'TBA'}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadDashboard();
     </script>
 </body>
 </html>

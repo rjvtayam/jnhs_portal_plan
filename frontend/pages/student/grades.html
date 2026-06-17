@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Grades - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .grade-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .grade-pass { background: #c6f6d5; color: #276749; }
+        .grade-fail { background: #fed7d7; color: #9b2c2c; }
+        .quarter-header {
+            background: #1e3a5f; color: white; padding: 10px 15px;
+            border-radius: 8px 8px 0 0; font-weight: 600;
+        }
+        .grade-row {
+            padding: 10px 15px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .grade-row:last-child { border-bottom: none; }
+        .grade-subject { font-weight: 500; }
+        .grade-value { font-weight: 700; font-size: 1.1rem; }
+        .grade-detail { font-size: 0.85rem; color: #718096; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>My Grades</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>All Grades</h3>
+                        <span id="semesterInfo" style="font-size:0.9rem;color:#718096;"></span>
+                    </div>
+                    <div class="card-body" id="gradesContainer">
+                        <p class="text-secondary">Loading grades...</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header">
+                        <h3>General Average</h3>
+                    </div>
+                    <div class="card-body" id="avgContainer">
+                        <p class="text-secondary">Calculating...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('dashboard');
+
+        async function loadGrades() {
+            try {
+                const grades = await api.get('/student/grades');
+                const container = document.getElementById('gradesContainer');
+                const avgContainer = document.getElementById('avgContainer');
+
+                if (!grades || grades.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No grades recorded yet</p>';
+                    return;
+                }
+
+                const grouped = {};
+                grades.forEach(g => {
+                    if (!grouped[g.subject]) grouped[g.subject] = {};
+                    grouped[g.subject][g.quarter] = {
+                        raw: g.raw_grade,
+                        transmuted: g.transmuted_grade,
+                        remarks: g.remarks
+                    };
+                });
+
+                let html = '<table style="width:100%;border-collapse:collapse;">';
+                html += '<thead><tr style="background:#f7fafc;">' +
+                    '<th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Subject</th>' +
+                    '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Q1</th>' +
+                    '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Q2</th>' +
+                    '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Q3</th>' +
+                    '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Q4</th>' +
+                    '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Average</th>' +
+                    '</tr></thead><tbody>';
+
+                const allAverages = [];
+
+                Object.keys(grouped).sort().forEach(subject => {
+                    const q = grouped[subject];
+                    html += '<tr>';
+                    html += `<td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:500;">${subject}</td>`;
+
+                    let sum = 0;
+                    let count = 0;
+                    ['Q1', 'Q2', 'Q3', 'Q4'].forEach(qtr => {
+                        if (q[qtr]) {
+                            const g = q[qtr].transmuted;
+                            const cls = g >= 75 ? 'grade-pass' : 'grade-fail';
+                            html += `<td style="padding:10px;text-align:center;border-bottom:1px solid #e2e8f0;"><span class="grade-badge ${cls}">${g}</span><br><span class="grade-detail">Raw: ${q[qtr].raw}</span></td>`;
+                            sum += g;
+                            count++;
+                        } else {
+                            html += '<td style="padding:10px;text-align:center;border-bottom:1px solid #e2e8f0;">-</td>';
+                        }
+                    });
+
+                    if (count > 0) {
+                        const avg = (sum / count).toFixed(1);
+                        allAverages.push(parseFloat(avg));
+                        const cls = avg >= 75 ? 'grade-pass' : 'grade-fail';
+                        html += `<td style="padding:10px;text-align:center;border-bottom:1px solid #e2e8f0;"><span class="grade-badge ${cls}" style="font-size:1rem;">${avg}</span></td>`;
+                    } else {
+                        html += '<td style="padding:10px;text-align:center;border-bottom:1px solid #e2e8f0;">-</td>';
+                    }
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+                if (allAverages.length > 0) {
+                    const overallAvg = (allAverages.reduce((a, b) => a + b, 0) / allAverages.length).toFixed(1);
+                    const cls = overallAvg >= 75 ? 'grade-pass' : 'grade-fail';
+                    avgContainer.innerHTML = `
+                        <div style="text-align:center;padding:20px;">
+                            <h2 style="font-size:2rem;margin-bottom:5px;">${overallAvg}</h2>
+                            <span class="grade-badge ${cls}" style="font-size:1.1rem;padding:8px 20px;">
+                                ${overallAvg >= 75 ? 'PASSING' : 'NEED IMPROVEMENT'}
+                            </span>
+                            <p style="margin-top:10px;color:#718096;">Based on ${allAverages.length} subjects</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadGrades();
+    </script>
+</body>
+</html>

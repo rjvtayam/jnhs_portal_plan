@@ -25,7 +25,7 @@ class ParentStudent(Base):
 
     parent_id = Column(Integer, ForeignKey("parents.id"), primary_key=True)
     student_id = Column(Integer, ForeignKey("students.id"), primary_key=True)
-    relationship = Column(String(30))
+    rel_type = Column("relationship", String(30))
 
     parent = relationship("Parent", back_populates="student_links")
     student = relationship("Student", back_populates="parent_links")

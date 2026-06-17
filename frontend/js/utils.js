@@ -132,6 +132,38 @@ function renderSidebar(activePage) {
                 </a>
             </div>
         `,
+        registrar: `
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a href="/pages/registrar/dashboard.html" class="nav-item ${activePage === 'registrar-dashboard' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Dashboard
+                </a>
+                <a href="/pages/registrar/enrollment.html" class="nav-item ${activePage === 'registrar-enrollment' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Enrollment
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Records</div>
+                <a href="/pages/registrar/students.html" class="nav-item ${activePage === 'registrar-students' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Student Records
+                </a>
+                <a href="/pages/registrar/sections.html" class="nav-item ${activePage === 'registrar-sections' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Sections
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Reports</div>
+                <a href="/pages/registrar/reports.html" class="nav-item ${activePage === 'registrar-reports' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> SF9 / SF10 Reports
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Accounts</div>
+                <a href="/pages/registrar/account-creation.html" class="nav-item ${activePage === 'registrar-accounts' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Create Accounts
+                </a>
+            </div>
+        `,
         teacher: `
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>

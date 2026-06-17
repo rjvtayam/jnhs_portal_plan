@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Dashboard - JNHS Portal</title>
+    <title>Child Progress - JNHS Portal</title>
     <link rel="stylesheet" href="/css/main.css">
     <style>
+        .child-selector { margin-bottom: 20px; }
         .child-card {
-            background: white; border-radius: 10px; padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 15px;
-            cursor: pointer; transition: transform 0.2s;
+            background: white; border-radius: 10px; padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 10px;
+            cursor: pointer; transition: transform 0.2s; border: 2px solid transparent;
         }
         .child-card:hover { transform: translateY(-2px); }
-        .child-card h3 { margin-bottom: 5px; color: #1e3a5f; }
-        .child-card p { font-size: 0.9rem; color: #718096; }
+        .child-card.active { border-color: #2c5282; }
         .grade-badge {
             display: inline-block; padding: 4px 12px; border-radius: 20px;
             font-weight: 600; font-size: 0.9rem;
@@ -28,43 +28,42 @@
         <main class="main-content">
             <div class="topbar">
                 <div class="topbar-title">
-                    <h1>Parent Dashboard</h1>
-                    <p>Welcome, <span id="parentName">Parent</span></p>
+                    <h1>Child Progress</h1>
                 </div>
                 <div class="topbar-actions">
                     <span class="user-info"></span>
                 </div>
             </div>
             <div class="content">
-                <div id="childrenContainer">
-                    <p class="text-secondary">Loading children...</p>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Select Child</h3>
+                    </div>
+                    <div class="card-body child-selector" id="childSelector">
+                        <p class="text-secondary">Loading children...</p>
+                    </div>
                 </div>
 
-                <div id="childDetail" style="display:none;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                        <h2 id="childName">Child Name</h2>
-                        <button class="btn btn-outline" onclick="showChildList()">Back to Children</button>
-                    </div>
-
+                <div id="childProgress" style="display:none;">
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon green">&#9632;</div>
                             <div class="stat-info">
-                                <h4 id="childPresent">0</h4>
+                                <h4 id="presentCount">0</h4>
                                 <p>Days Present</p>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon red">&#9632;</div>
                             <div class="stat-info">
-                                <h4 id="childAbsent">0</h4>
+                                <h4 id="absentCount">0</h4>
                                 <p>Days Absent</p>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon yellow">&#9632;</div>
                             <div class="stat-info">
-                                <h4 id="childLate">0</h4>
+                                <h4 id="lateCount">0</h4>
                                 <p>Days Tardy</p>
                             </div>
                         </div>
@@ -72,9 +71,9 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h3>Grades</h3>
+                            <h3>Grades by Quarter</h3>
                         </div>
-                        <div class="card-body" id="childGrades">
+                        <div class="card-body" id="gradesContainer">
                             <p class="text-secondary">Loading grades...</p>
                         </div>
                     </div>
@@ -86,48 +85,45 @@
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
     <script>
-        initDashboard('dashboard');
-        const user = Auth.getUser();
-        if (user) {
-            document.getElementById('parentName').textContent = user.username;
-        }
+        initDashboard('progress');
+        let childrenData = [];
 
         async function loadChildren() {
             try {
                 const children = await api.get('/parent/children');
-                const container = document.getElementById('childrenContainer');
+                childrenData = children;
+                const selector = document.getElementById('childSelector');
 
                 if (!children || children.length === 0) {
-                    container.innerHTML = '<p class="text-secondary">No children linked to your account. Please contact the registrar.</p>';
+                    selector.innerHTML = '<p class="text-secondary">No children linked to your account.</p>';
                     return;
                 }
 
-                container.innerHTML = '<h2 style="margin-bottom:15px;">My Children</h2>' +
-                    children.map(c => `
-                        <div class="child-card" onclick="viewChild(${c.id})">
-                            <h3>${c.last_name}, ${c.first_name} ${c.middle_name || ''}</h3>
-                            <p>LRN: ${c.lrn} | Grade ${c.grade_level} - ${c.section} ${c.track ? '(' + c.track + ')' : ''}</p>
-                            <p>Relationship: ${c.relationship}</p>
-                        </div>
-                    `).join('');
+                selector.innerHTML = children.map(c => `
+                    <div class="child-card" onclick="selectChild(${c.id}, this)">
+                        <strong>${c.last_name}, ${c.first_name} ${c.middle_name || ''}</strong>
+                        <span style="margin-left:15px;color:#718096;">Grade ${c.grade_level} - ${c.section}</span>
+                        <span style="float:right;color:#718096;">${c.relationship}</span>
+                    </div>
+                `).join('');
             } catch (err) {
                 console.error(err);
             }
         }
 
-        async function viewChild(studentId) {
+        async function selectChild(studentId, el) {
+            document.querySelectorAll('.child-card').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+
             try {
                 const data = await api.get(`/parent/child/${studentId}/dashboard`);
+                document.getElementById('childProgress').style.display = 'block';
 
-                document.getElementById('childrenContainer').style.display = 'none';
-                document.getElementById('childDetail').style.display = 'block';
+                document.getElementById('presentCount').textContent = data.attendance.present;
+                document.getElementById('absentCount').textContent = data.attendance.absent;
+                document.getElementById('lateCount').textContent = data.attendance.late;
 
-                document.getElementById('childName').textContent = `${data.student.last_name}, ${data.student.first_name}`;
-                document.getElementById('childPresent').textContent = data.attendance.present;
-                document.getElementById('childAbsent').textContent = data.attendance.absent;
-                document.getElementById('childLate').textContent = data.attendance.late;
-
-                const gradesContainer = document.getElementById('childGrades');
+                const gradesContainer = document.getElementById('gradesContainer');
                 if (!data.grades || data.grades.length === 0) {
                     gradesContainer.innerHTML = '<p class="text-secondary">No grades recorded yet</p>';
                     return;
@@ -140,20 +136,32 @@
                 });
 
                 let html = '<table style="width:100%;border-collapse:collapse;">';
-                html += '<tr style="background:#f7fafc;"><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q1</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q2</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q3</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">Q4</th></tr>';
+                html += '<tr style="background:#f7fafc;"><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th>';
+                ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
+                    html += `<th style="padding:8px;border-bottom:1px solid #e2e8f0;">${q}</th>`;
+                });
+                html += '<th style="padding:8px;border-bottom:1px solid #e2e8f0;">Avg</th></tr>';
 
                 Object.keys(grouped).sort().forEach(subject => {
                     const q = grouped[subject];
-                    html += `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0;">${subject}</td>`;
+                    let sum = 0, count = 0;
+                    html += `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0;font-weight:500;">${subject}</td>`;
                     ['Q1', 'Q2', 'Q3', 'Q4'].forEach(qtr => {
-                        const grade = q[qtr];
-                        if (grade !== undefined && grade !== null) {
-                            const cls = grade >= 75 ? 'grade-pass' : 'grade-fail';
-                            html += `<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;"><span class="grade-badge ${cls}">${grade}</span></td>`;
+                        if (q[qtr]) {
+                            const cls = q[qtr] >= 75 ? 'grade-pass' : 'grade-fail';
+                            html += `<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;"><span class="grade-badge ${cls}">${q[qtr]}</span></td>`;
+                            sum += q[qtr]; count++;
                         } else {
                             html += '<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;">-</td>';
                         }
                     });
+                    if (count > 0) {
+                        const avg = (sum / count).toFixed(1);
+                        const cls = avg >= 75 ? 'grade-pass' : 'grade-fail';
+                        html += `<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;"><span class="grade-badge ${cls}" style="font-size:1rem;">${avg}</span></td>`;
+                    } else {
+                        html += '<td style="padding:8px;text-align:center;border-bottom:1px solid #e2e8f0;">-</td>';
+                    }
                     html += '</tr>';
                 });
                 html += '</table>';
@@ -161,11 +169,6 @@
             } catch (err) {
                 console.error(err);
             }
-        }
-
-        function showChildList() {
-            document.getElementById('childrenContainer').style.display = 'block';
-            document.getElementById('childDetail').style.display = 'none';
         }
 
         loadChildren();
