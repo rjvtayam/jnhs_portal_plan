@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Entry - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Grade Entry</h1>
+                    <p>Encode quarterly grades for students</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-success" onclick="saveAllGrades()">Save All Grades</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="grid-4">
+                            <div class="form-group">
+                                <label>School Year</label>
+                                <select class="form-control" id="schoolYear">
+                                    <option value="2025-2026">2025-2026</option>
+                                    <option value="2024-2025">2024-2025</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Semester</label>
+                                <select class="form-control" id="semester">
+                                    <option value="1st">1st Semester</option>
+                                    <option value="2nd">2nd Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quarter</label>
+                                <select class="form-control" id="quarter">
+                                    <option value="Q1">Quarter 1</option>
+                                    <option value="Q2">Quarter 2</option>
+                                    <option value="Q3">Quarter 3</option>
+                                    <option value="Q4">Quarter 4</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select class="form-control" id="subjectSelect">
+                                    <option value="">Select Subject</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Section</label>
+                                <select class="form-control" id="sectionSelect" onchange="loadStudentsForSection()">
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Student Grades</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>WW Score</th>
+                                        <th>WW Possible</th>
+                                        <th>PT Score</th>
+                                        <th>PT Possible</th>
+                                        <th>QA Score</th>
+                                        <th>QA Possible</th>
+                                        <th>Raw Grade</th>
+                                        <th>Transmuted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gradesTable">
+                                    <tr><td colspan="9" class="text-center text-secondary">Select a section to begin</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('grade-entry');
+
+        const gradeData = {};
+
+        async function loadSections() {
+            try {
+                const sections = await api.get('/sections');
+                const select = document.getElementById('sectionSelect');
+                select.innerHTML = '<option value="">Select Section</option>' +
+                    sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadSubjects() {
+            try {
+                const subjects = await api.get('/subjects');
+                const select = document.getElementById('subjectSelect');
+                select.innerHTML = '<option value="">Select Subject</option>' +
+                    subjects.map(s => `<option value="${s.id}">${s.code} - ${s.name}</option>`).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadStudentsForSection() {
+            const sectionId = document.getElementById('sectionSelect').value;
+            if (!sectionId) return;
+
+            try {
+                const students = await api.get(`/students/`);
+                renderGradeTable(students);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderGradeTable(students) {
+            const tbody = document.getElementById('gradesTable');
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-secondary">No students found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr data-student-id="${s.id}">
+                    <td>${s.last_name}, ${s.first_name}</td>
+                    <td><input type="number" class="form-control" style="width:80px" data-field="ww_score" onchange="computeGrade(${s.id})"></td>
+                    <td><input type="number" class="form-control" style="width:80px" data-field="ww_possible" onchange="computeGrade(${s.id})"></td>
+                    <td><input type="number" class="form-control" style="width:80px" data-field="pt_score" onchange="computeGrade(${s.id})"></td>
+                    <td><input type="number" class="form-control" style="width:80px" data-field="pt_possible" onchange="computeGrade(${s.id})"></td>
+                    <td><input type="number" class="form-control" style="width:80px" data-field="qa_score" onchange="computeGrade(${s.id})"></td>
+                    <td><input type="number" class="form-control" style="width:80px" data-field="qa_possible" onchange="computeGrade(${s.id})"></td>
+                    <td class="raw-grade" data-student="${s.id}">-</td>
+                    <td class="transmuted-grade" data-student="${s.id}">-</td>
+                </tr>
+            `).join('');
+        }
+
+        function computeGrade(studentId) {
+            const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
+            const getValue = (field) => parseFloat(row.querySelector(`[data-field="${field}"]`).value) || 0;
+
+            const ww = getValue('ww_score'), wwP = getValue('ww_possible');
+            const pt = getValue('pt_score'), ptP = getValue('pt_possible');
+            const qa = getValue('qa_score'), qaP = getValue('qa_possible');
+
+            const wwPct = wwP ? (ww / wwP * 100) : 0;
+            const ptPct = ptP ? (pt / ptP * 100) : 0;
+            const qaPct = qaP ? (qa / qaP * 100) : 0;
+
+            const raw = (wwPct * 0.30) + (ptPct * 0.50) + (qaPct * 0.20);
+            const transmuted = Math.min(100, Math.round(51 + (raw / 2)));
+
+            document.querySelector(`.raw-grade[data-student="${studentId}"]`).textContent = raw.toFixed(2);
+            document.querySelector(`.transmuted-grade[data-student="${studentId}"]`).textContent = transmuted;
+
+            gradeData[studentId] = {
+                ww_score: ww, ww_possible: wwP,
+                pt_score: pt, pt_possible: ptP,
+                qa_score: qa, qa_possible: qaP,
+                raw_grade: raw, transmuted_grade: transmuted,
+            };
+        }
+
+        async function saveAllGrades() {
+            const subjectId = document.getElementById('subjectSelect').value;
+            const sectionId = document.getElementById('sectionSelect').value;
+            const schoolYear = document.getElementById('schoolYear').value;
+            const semester = document.getElementById('semester').value;
+            const quarter = document.getElementById('quarter').value;
+
+            if (!subjectId || !sectionId) {
+                showNotification('Please select subject and section', 'error');
+                return;
+            }
+
+            const grades = Object.entries(gradeData).map(([studentId, data]) => ({
+                student_id: parseInt(studentId),
+                subject_id: parseInt(subjectId),
+                section_id: parseInt(sectionId),
+                school_year: schoolYear,
+                semester,
+                quarter,
+                ...data,
+            }));
+
+            try {
+                await api.post('/grades/', { grades });
+                showNotification('Grades saved successfully');
+            } catch (err) {
+                showNotification(err.message || 'Error saving grades', 'error');
+            }
+        }
+
+        loadSections();
+        loadSubjects();
+    </script>
+</body>
+</html>

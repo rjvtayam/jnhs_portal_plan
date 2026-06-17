@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Teacher Dashboard</h1>
+                    <p>Welcome back, <span id="teacherName">Teacher</span></p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="mySections">0</h4>
+                            <p>My Sections</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="myStudents">0</h4>
+                            <p>My Students</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="pendingGrades">0</h4>
+                            <p>Pending Grades</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <a href="/pages/teacher/grade-entry.html" class="btn btn-primary mb-2" style="width:100%">Enter Grades</a>
+                            <a href="/pages/teacher/attendance.html" class="btn btn-secondary mb-2" style="width:100%">Record Attendance</a>
+                            <a href="/pages/teacher/my-sections.html" class="btn btn-outline mb-2" style="width:100%">View My Sections</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Announcements</h3>
+                        </div>
+                        <div class="card-body" id="teacherAnnouncements">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('dashboard');
+        const user = Auth.getUser();
+        if (user) {
+            document.getElementById('teacherName').textContent = user.username;
+        }
+    </script>
+</body>
+</html>

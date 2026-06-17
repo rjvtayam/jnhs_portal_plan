@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JNHS Portal - Login</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <h1>JNHS Portal</h1>
+            <p>Jomalig National High School</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Jomalig, Quezon</p>
+        </div>
+        <div class="login-right">
+            <div class="login-form">
+                <h2>Welcome Back</h2>
+                <p class="subtitle">Sign in to your account</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-control" id="username" required placeholder="Enter your username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" id="password" required placeholder="Enter your password">
+                    </div>
+                    <div id="loginError" style="color: #e53e3e; margin-bottom: 15px; display: none;"></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        if (Auth.isLoggedIn()) {
+            const role = Auth.getRole();
+            const redirects = {
+                admin: '/pages/admin/dashboard.html',
+                teacher: '/pages/teacher/dashboard.html',
+                student: '/pages/student/dashboard.html',
+                parent: '/pages/parent/dashboard.html',
+                registrar: '/pages/admin/dashboard.html',
+            };
+            window.location.href = redirects[role] || '/pages/admin/dashboard.html';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('loginError');
+            errorEl.style.display = 'none';
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const result = await api.post('/auth/login', { username, password });
+                if (result && result.access_token) {
+                    api.setToken(result.access_token);
+                    Auth.setUser(result.user);
+
+                    const redirects = {
+                        admin: '/pages/admin/dashboard.html',
+                        teacher: '/pages/teacher/dashboard.html',
+                        student: '/pages/student/dashboard.html',
+                        parent: '/pages/parent/dashboard.html',
+                        registrar: '/pages/admin/dashboard.html',
+                    };
+                    window.location.href = redirects[result.user.role] || '/pages/admin/dashboard.html';
+                }
+            } catch (err) {
+                errorEl.textContent = err.message || 'Invalid credentials';
+                errorEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

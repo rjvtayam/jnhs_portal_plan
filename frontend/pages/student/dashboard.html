@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>My Dashboard</h1>
+                    <p>Welcome back, <span id="studentName">Student</span></p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="currentGrade">-</h4>
+                            <p>Current Average</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="attendanceRate">-</h4>
+                            <p>Attendance Rate</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="currentSection">-</h4>
+                            <p>Current Section</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>My Grades</h3>
+                        </div>
+                        <div class="card-body" id="myGrades">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Announcements</h3>
+                        </div>
+                        <div class="card-body" id="myAnnouncements">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('dashboard');
+        const user = Auth.getUser();
+        if (user) {
+            document.getElementById('studentName').textContent = user.username;
+        }
+    </script>
+</body>
+</html>

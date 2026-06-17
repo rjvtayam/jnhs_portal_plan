@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Student Management</h1>
+                    <p>Manage all student records</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="showModal('addStudentModal')">+ Add Student</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search by name or LRN..." style="width: 300px;">
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="loadStudents()">Refresh</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>LRN</th>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Grade Level</th>
+                                        <th>Contact</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable">
+                                    <tr><td colspan="6" class="text-center text-secondary">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal-overlay" id="addStudentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add New Student</h3>
+                <button onclick="hideModal('addStudentModal')" style="background:none;border:none;font-size:1.5rem;cursor:pointer">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addStudentForm">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>LRN *</label>
+                            <input type="text" class="form-control" name="lrn" required placeholder="e.g., 123456789012">
+                        </div>
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Middle Name</label>
+                            <input type="text" class="form-control" name="middle_name">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Extension Name</label>
+                            <input type="text" class="form-control" name="extension_name" placeholder="Jr., Sr.">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select class="form-control" name="gender">
+                                <option value="">Select...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Birth Date</label>
+                            <input type="date" class="form-control" name="birth_date">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" class="form-control" name="contact_number">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea class="form-control" name="address" rows="2"></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Guardian Name</label>
+                            <input type="text" class="form-control" name="guardian_name">
+                        </div>
+                        <div class="form-group">
+                            <label>Guardian Contact</label>
+                            <input type="text" class="form-control" name="guardian_contact">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="hideModal('addStudentModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('students');
+
+        async function loadStudents() {
+            try {
+                const students = await api.get('/students/');
+                renderStudents(students);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('studentsTable');
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">No students found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td>${s.lrn}</td>
+                    <td>${s.last_name}, ${s.first_name} ${s.middle_name || ''}</td>
+                    <td>${s.gender || '-'}</td>
+                    <td>-</td>
+                    <td>${s.contact_number || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewStudent(${s.id})">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveStudent() {
+            const form = document.getElementById('addStudentForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                await api.post('/students/', data);
+                hideModal('addStudentModal');
+                showNotification('Student added successfully');
+                form.reset();
+                loadStudents();
+            } catch (err) {
+                showNotification(err.message || 'Error adding student', 'error');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', debounce(async (e) => {
+            const search = e.target.value;
+            try {
+                const students = await api.get(`/students/?search=${encodeURIComponent(search)}`);
+                renderStudents(students);
+            } catch (err) {
+                console.error(err);
+            }
+        }, 300));
+
+        loadStudents();
+    </script>
+</body>
+</html>

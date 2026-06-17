@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Admin Dashboard</h1>
+                    <p>Jomalig National High School Portal</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalStudents">0</h4>
+                            <p>Total Students</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalTeachers">0</h4>
+                            <p>Total Teachers</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalSections">0</h4>
+                            <p>Total Sections</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalEnrolled">0</h4>
+                            <p>Enrolled (SY 2025-2026)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Announcements</h3>
+                            <a href="/pages/admin/announcements.html" class="btn btn-sm btn-outline">View All</a>
+                        </div>
+                        <div class="card-body" id="recentAnnouncements">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Upcoming Events</h3>
+                        </div>
+                        <div class="card-body" id="upcomingEvents">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('dashboard');
+
+        async function loadDashboard() {
+            try {
+                const [students, teachers, sections, announcements] = await Promise.all([
+                    api.get('/students/').catch(() => []),
+                    api.get('/teachers/').catch(() => []),
+                    api.get('/sections').catch(() => []),
+                    api.get('/announcements').catch(() => []),
+                ]);
+
+                document.getElementById('totalStudents').textContent = students.length || 0;
+                document.getElementById('totalTeachers').textContent = teachers.length || 0;
+                document.getElementById('totalSections').textContent = sections.length || 0;
+
+                const announcementsHtml = (announcements || []).slice(0, 5).map(a => `
+                    <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        <strong>${a.title}</strong>
+                        <p style="font-size: 0.85rem; color: #718096;">${formatDate(a.created_at)}</p>
+                    </div>
+                `).join('');
+                document.getElementById('recentAnnouncements').innerHTML = announcementsHtml || '<p class="text-secondary">No announcements</p>';
+
+                const eventsHtml = (announcements || []).slice(0, 5).map(e => `
+                    <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        <strong>${e.title}</strong>
+                        <p style="font-size: 0.85rem; color: #718096;">${formatDate(e.event_date)}</p>
+                    </div>
+                `).join('');
+                document.getElementById('upcomingEvents').innerHTML = eventsHtml || '<p class="text-secondary">No upcoming events</p>';
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JNHS Portal - Jomalig National High School</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .landing-nav {
+            background: var(--primary-dark);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .landing-nav .brand {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .landing-nav a {
+            color: rgba(255,255,255,0.8);
+            margin-left: 20px;
+            font-size: 0.9rem;
+        }
+        .landing-nav a:hover { color: white; }
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 100px 40px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 15px; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+        .hero .btn { margin-top: 30px; }
+        .features {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .features h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 50px;
+            color: var(--primary);
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        .feature-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        .feature-card h3 { margin-bottom: 10px; color: var(--primary); }
+        .feature-card p { color: var(--text-secondary); font-size: 0.95rem; }
+        footer {
+            background: var(--primary-dark);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="landing-nav">
+        <div class="brand">JNHS Portal</div>
+        <div>
+            <a href="/login.html">Login</a>
+        </div>
+    </nav>
+    <section class="hero">
+        <h1>Jomalig National High School</h1>
+        <p>Your comprehensive school portal for academic records, grades, and announcements. Stay connected with your education.</p>
+        <a href="/login.html" class="btn btn-secondary" style="font-size:1.1rem; padding: 15px 40px;">Login to Portal</a>
+    </section>
+    <section class="features">
+        <h2>Portal Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">&#9632;</div>
+                <h3>Grade Management</h3>
+                <p>View quarterly grades, transmuted grades, and academic progress for all subjects.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#9632;</div>
+                <h3>Attendance Tracking</h3>
+                <p>Monitor attendance records and stay informed about student presence.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#9632;</div>
+                <h3>Enrollment System</h3>
+                <p>Online enrollment for new and returning students with section assignment.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#9632;</div>
+                <h3>Announcements</h3>
+                <p>Stay updated with school events, activities, and important notices.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#9632;</div>
+                <h3>SF9/SF10 Reports</h3>
+                <p>Generate DepEd-compliant School Form 9 and School Form 10 documents.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#9632;</div>
+                <h3>Parent Portal</h3>
+                <p>Parents can monitor their child's academic progress and attendance.</p>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; 2025 Jomalig National High School. Jomalig, Quezon.</p>
+    </footer>
+</body>
+</html>
