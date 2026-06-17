@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Sections - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Sections Overview</h1>
+                    <p>View all sections and class assignments</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>All Sections</h3>
+                        <div style="display:flex;gap:10px;">
+                            <select class="form-control" style="width:150px" id="gradeFilter" onchange="loadSections()">
+                                <option value="">All Grades</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline" onclick="loadSections()">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Section Name</th>
+                                        <th>Grade Level</th>
+                                        <th>Track</th>
+                                        <th>School Year</th>
+                                        <th>Adviser</th>
+                                        <th>Enrolled</th>
+                                        <th>Capacity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sectionsTable">
+                                    <tr><td colspan="7" class="text-center text-secondary">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('principal-sections');
+
+        async function loadSections() {
+            try {
+                const grade = document.getElementById('gradeFilter').value;
+                let url = '/principal/sections';
+                if (grade) url += `?grade_level=${grade}`;
+
+                const sections = await api.get(url);
+                renderSections(sections);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderSections(sections) {
+            const tbody = document.getElementById('sectionsTable');
+            if (!sections || sections.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">No sections found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = sections.map(s => `
+                <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>Grade ${s.grade_level}</td>
+                    <td>${s.track || 'N/A'}</td>
+                    <td>${s.school_year}</td>
+                    <td>${s.adviser}</td>
+                    <td>
+                        <span class="badge badge-${s.enrolled_count >= s.max_students ? 'danger' : 'success'}">
+                            ${s.enrolled_count}
+                        </span>
+                    </td>
+                    <td>${s.max_students}</td>
+                </tr>
+            `).join('');
+        }
+
+        loadSections();
+    </script>
+</body>
+</html>

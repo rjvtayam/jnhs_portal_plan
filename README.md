@@ -20,7 +20,20 @@
 - **Enrollment System** - Student enrollment with section assignment
 - **SF9/SF10 Reports** - DepEd-compliant report card generation
 - **Announcements** - School-wide announcements and events
-- **Role-Based Access** - Admin, Teacher, Student, Parent roles
+- **System Monitoring** - Error tracking, logs, and performance metrics
+- **Role-Based Access** - Multiple portal types with specific permissions
+
+## Portal Types
+
+| Portal | Role | Description |
+|--------|------|-------------|
+| **Super Admin** | `super_admin` | System monitoring, error tracking, performance metrics |
+| **Admin** | `admin` | Student/teacher management, enrollment, grades |
+| **Principal/OIC** | `principal` | View-only records, post announcements |
+| **Teacher** | `teacher` | Grade entry, attendance, view sections |
+| **Student** | `student` | View grades, schedule, profile |
+| **Parent** | `parent` | View child progress, announcements |
+| **Registrar** | `registrar` | Enrollment management, student records |
 
 ## Project Structure
 
@@ -39,6 +52,12 @@ jnhs-portal/
 │   ├── css/            # Stylesheets
 │   ├── js/             # JavaScript modules
 │   └── pages/          # HTML pages per role
+│       ├── admin/      # Admin portal
+│       ├── teacher/    # Teacher portal
+│       ├── student/    # Student portal
+│       ├── parent/     # Parent portal
+│       ├── superadmin/ # Super Admin portal
+│       └── principal/  # Principal/OIC portal
 └── database/           # SQL schemas and seeds
 ```
 
@@ -74,7 +93,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 | Role | Username | Password |
 |------|----------|----------|
+| Super Admin | superadmin | admin123 |
 | Admin | admin | admin123 |
+| Principal | principal | admin123 |
 
 ## DepEd Grading System
 
@@ -91,3 +112,21 @@ Grades are transmuted from raw scores to report card grades (minimum 60 raw = 75
 ## API Endpoints
 
 See `/api/docs` for full API documentation with Swagger UI.
+
+## System Monitoring (Super Admin)
+
+The Super Admin portal provides:
+- System health status (database, users, performance)
+- Error log tracking with resolution status
+- User distribution analytics
+- Performance metrics dashboard
+- System activity logs
+
+## Principal Portal Features
+
+The Principal/OIC portal provides:
+- School overview dashboard (students, teachers, sections)
+- View all teachers, students, and sections (read-only)
+- Grade performance summary
+- Post announcements to teachers and students
+- View all announcements

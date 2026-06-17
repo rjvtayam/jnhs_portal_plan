@@ -38,7 +38,9 @@
         if (Auth.isLoggedIn()) {
             const role = Auth.getRole();
             const redirects = {
+                super_admin: '/pages/superadmin/dashboard.html',
                 admin: '/pages/admin/dashboard.html',
+                principal: '/pages/principal/dashboard.html',
                 teacher: '/pages/teacher/dashboard.html',
                 student: '/pages/student/dashboard.html',
                 parent: '/pages/parent/dashboard.html',
@@ -62,7 +64,9 @@
                     Auth.setUser(result.user);
 
                     const redirects = {
+                        super_admin: '/pages/superadmin/dashboard.html',
                         admin: '/pages/admin/dashboard.html',
+                        principal: '/pages/principal/dashboard.html',
                         teacher: '/pages/teacher/dashboard.html',
                         student: '/pages/student/dashboard.html',
                         parent: '/pages/parent/dashboard.html',

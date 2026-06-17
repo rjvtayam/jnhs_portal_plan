@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'teacher', 'student', 'parent', 'registrar')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('super_admin', 'admin', 'principal', 'teacher', 'student', 'parent', 'registrar')),
     email VARCHAR(100),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -226,3 +226,55 @@ CREATE INDEX idx_attendance_student ON attendance(student_id);
 CREATE INDEX idx_attendance_date ON attendance(date);
 CREATE INDEX idx_enrollments_school_year ON enrollments(school_year);
 CREATE INDEX idx_announcements_active ON announcements(is_active, created_at DESC);
+
+-- ============================================
+-- System Monitoring Tables (Super Admin)
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS system_logs (
+    id SERIAL PRIMARY KEY,
+    level VARCHAR(10) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    details JSONB,
+    ip_address VARCHAR(50),
+    user_id INT,
+    user_role VARCHAR(20),
+    endpoint VARCHAR(200),
+    method VARCHAR(10),
+    status_code INT,
+    response_time_ms INT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS system_metrics (
+    id SERIAL PRIMARY KEY,
+    metric_name VARCHAR(100) NOT NULL,
+    metric_value INT NOT NULL,
+    metric_unit VARCHAR(20),
+    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS error_logs (
+    id SERIAL PRIMARY KEY,
+    error_type VARCHAR(100) NOT NULL,
+    error_message TEXT NOT NULL,
+    stack_trace TEXT,
+    endpoint VARCHAR(200),
+    method VARCHAR(10),
+    user_id INT,
+    user_role VARCHAR(20),
+    ip_address VARCHAR(50),
+    resolved INT DEFAULT 0,
+    resolved_by INT,
+    resolved_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_system_logs_level ON system_logs(level);
+CREATE INDEX idx_system_logs_category ON system_logs(category);
+CREATE INDEX idx_system_logs_created ON system_logs(created_at DESC);
+CREATE INDEX idx_error_logs_resolved ON error_logs(resolved);
+CREATE INDEX idx_error_logs_created ON error_logs(created_at DESC);
+CREATE INDEX idx_system_metrics_name ON system_metrics(metric_name);
+CREATE INDEX idx_system_metrics_recorded ON system_metrics(recorded_at DESC);

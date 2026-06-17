@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Logs - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .log-entry {
+            padding: 15px; border-bottom: 1px solid #e2e8f0;
+        }
+        .log-entry:hover { background: #f7fafc; }
+        .error-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+        .error-type { font-weight: 600; color: #e53e3e; font-size: 0.95rem; }
+        .error-meta { display: flex; gap: 15px; color: #718096; font-size: 0.8rem; margin-top: 5px; }
+        .error-message { color: #4a5568; font-size: 0.9rem; margin: 8px 0; }
+        .error-trace { background: #f7fafc; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #4a5568; max-height: 150px; overflow-y: auto; white-space: pre-wrap; display: none; }
+        .error-trace.show { display: block; }
+        .resolved-badge { background: #f0fff4; color: #276749; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; }
+        .unresolved-badge { background: #fff5f5; color: #9b2c2c; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Error Logs</h1>
+                    <p>Track and resolve system errors</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                    <button class="btn btn-sm btn-outline" onclick="loadErrors()">Refresh</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalErrors">0</h4>
+                            <p>Total Errors</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="unresolvedCount">0</h4>
+                            <p>Unresolved</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="resolvedCount">0</h4>
+                            <p>Resolved</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>All Error Logs</h3>
+                        <select class="form-control" style="width:150px" id="filterStatus" onchange="loadErrors()">
+                            <option value="">All Status</option>
+                            <option value="unresolved">Unresolved</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="card-body" id="errorsContainer" style="max-height:600px;overflow-y:auto;">
+                        <p class="text-secondary">Loading errors...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('system-monitor');
+
+        async function loadErrors() {
+            try {
+                const filter = document.getElementById('filterStatus').value;
+                let url = '/system/errors';
+                if (filter === 'resolved') url += '?resolved=true';
+                else if (filter === 'unresolved') url += '?resolved=false';
+
+                const errors = await api.get(url);
+                document.getElementById('totalErrors').textContent = errors.length;
+
+                const unresolved = errors.filter(e => !e.resolved).length;
+                const resolved = errors.filter(e => e.resolved).length;
+                document.getElementById('unresolvedCount').textContent = unresolved;
+                document.getElementById('resolvedCount').textContent = resolved;
+
+                const container = document.getElementById('errorsContainer');
+                if (!errors || errors.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No errors found</p>';
+                    return;
+                }
+
+                container.innerHTML = errors.map(e => `
+                    <div class="log-entry">
+                        <div class="error-header">
+                            <div>
+                                <span class="error-type">${e.error_type}</span>
+                                <div class="error-meta">
+                                    <span>${formatDateTime(e.created_at)}</span>
+                                    <span>Endpoint: ${e.method || ''} ${e.endpoint || ''}</span>
+                                    <span>User: ${e.user_role || 'N/A'}</span>
+                                    <span>IP: ${e.ip_address || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div>
+                                ${e.resolved
+                                    ? '<span class="resolved-badge">Resolved</span>'
+                                    : `<button class="btn btn-sm btn-success" onclick="resolveError(${e.id})">Mark Resolved</button>`
+                                }
+                            </div>
+                        </div>
+                        <div class="error-message">${e.error_message}</div>
+                        ${e.stack_trace ? `
+                            <button class="btn btn-sm btn-outline" onclick="this.nextElementSibling.classList.toggle('show')" style="margin-top:5px;font-size:0.8rem;">Show Stack Trace</button>
+                            <div class="error-trace">${e.stack_trace}</div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('errorsContainer').innerHTML = '<p class="text-danger">Error loading logs</p>';
+            }
+        }
+
+        async function resolveError(id) {
+            try {
+                await api.put(`/system/errors/${id}/resolve`);
+                showNotification('Error marked as resolved');
+                loadErrors();
+            } catch (err) {
+                showNotification('Error resolving: ' + err.message, 'error');
+            }
+        }
+
+        loadErrors();
+    </script>
+</body>
+</html>

@@ -60,6 +60,46 @@ function renderSidebar(activePage) {
     if (!user) return '';
 
     const roleMenus = {
+        super_admin: `
+            <div class="nav-section">
+                <div class="nav-section-title">System Monitoring</div>
+                <a href="/pages/superadmin/dashboard.html" class="nav-item ${activePage === 'system-monitor' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> System Dashboard
+                </a>
+                <a href="/pages/superadmin/errors.html" class="nav-item ${activePage === 'system-errors' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Error Logs
+                </a>
+                <a href="/pages/superadmin/users.html" class="nav-item ${activePage === 'system-users' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> User Management
+                </a>
+            </div>
+        `,
+        principal: `
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                <a href="/pages/principal/dashboard.html" class="nav-item ${activePage === 'principal-dashboard' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Dashboard
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">View Records</div>
+                <a href="/pages/principal/teachers.html" class="nav-item ${activePage === 'principal-teachers' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Teachers
+                </a>
+                <a href="/pages/principal/students.html" class="nav-item ${activePage === 'principal-students' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Students
+                </a>
+                <a href="/pages/principal/sections.html" class="nav-item ${activePage === 'principal-sections' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Sections
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Communication</div>
+                <a href="/pages/principal/announcements.html" class="nav-item ${activePage === 'principal-announcements' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> Announcements
+                </a>
+            </div>
+        `,
         admin: `
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>

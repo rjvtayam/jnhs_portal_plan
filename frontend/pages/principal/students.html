@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Students - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Student Records</h1>
+                    <p>View all enrolled students</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label>Search</label>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search by name or LRN...">
+                            </div>
+                            <div class="form-group">
+                                <label>Grade Level</label>
+                                <select class="form-control" id="gradeFilter" onchange="loadStudents()">
+                                    <option value="">All Grades</option>
+                                    <option value="7">Grade 7</option>
+                                    <option value="8">Grade 8</option>
+                                    <option value="9">Grade 9</option>
+                                    <option value="10">Grade 10</option>
+                                    <option value="11">Grade 11</option>
+                                    <option value="12">Grade 12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" style="width:100%" onclick="loadStudents()">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Students</h3>
+                        <span id="studentCount" class="text-secondary"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>LRN</th>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Grade Level</th>
+                                        <th>Section</th>
+                                        <th>Track</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable">
+                                    <tr><td colspan="6" class="text-center text-secondary">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('principal-students');
+
+        async function loadStudents() {
+            try {
+                const grade = document.getElementById('gradeFilter').value;
+                const search = document.getElementById('searchInput').value;
+                let url = '/principal/students?';
+                if (grade) url += `grade_level=${grade}&`;
+                if (search) url += `search=${encodeURIComponent(search)}`;
+
+                const students = await api.get(url);
+                document.getElementById('studentCount').textContent = `${students.length} students`;
+                renderStudents(students);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('studentsTable');
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">No students found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td>${s.lrn}</td>
+                    <td><strong>${s.last_name}, ${s.first_name} ${s.middle_name || ''}</strong></td>
+                    <td>${s.gender || '-'}</td>
+                    <td>Grade ${s.grade_level}</td>
+                    <td>${s.section}</td>
+                    <td>${s.track || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', debounce(() => loadStudents(), 300));
+        loadStudents();
+    </script>
+</body>
+</html>

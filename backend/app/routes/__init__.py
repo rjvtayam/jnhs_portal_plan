@@ -6,6 +6,8 @@ from app.routes.attendance import router as attendance_router
 from app.routes.sections import router as sections_router
 from app.routes.enrollment import router as enrollment_router
 from app.routes.announcements import router as announcements_router
+from app.routes.system import router as system_router
+from app.routes.principal import router as principal_router
 
 __all__ = [
     "auth_router",
@@ -16,4 +18,6 @@ __all__ = [
     "sections_router",
     "enrollment_router",
     "announcements_router",
+    "system_router",
+    "principal_router",
 ]

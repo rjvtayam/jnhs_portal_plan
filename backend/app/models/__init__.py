@@ -7,6 +7,7 @@ from app.models.enrollment import Enrollment
 from app.models.grade import Grade
 from app.models.attendance import Attendance
 from app.models.announcement import Announcement, Event, Document, SchoolSettings
+from app.models.system import SystemLog, SystemMetric, ErrorLog
 
 __all__ = [
     "User", "UserRole",
@@ -18,4 +19,5 @@ __all__ = [
     "Grade",
     "Attendance",
     "Announcement", "Event", "Document", "SchoolSettings",
+    "SystemLog", "SystemMetric", "ErrorLog",
 ]

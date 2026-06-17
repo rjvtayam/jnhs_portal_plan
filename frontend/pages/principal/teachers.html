@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Teachers - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Faculty Members</h1>
+                    <p>View all registered teachers</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>All Teachers</h3>
+                        <div style="display:flex;gap:10px;">
+                            <input type="text" class="form-control" placeholder="Search..." style="width:250px;" id="searchInput">
+                            <button class="btn btn-sm btn-outline" onclick="loadTeachers()">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Specialization</th>
+                                        <th>Contact</th>
+                                        <th>Adviser</th>
+                                        <th>Sections</th>
+                                        <th>Subjects</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachersTable">
+                                    <tr><td colspan="8" class="text-center text-secondary">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('principal-teachers');
+
+        async function loadTeachers() {
+            try {
+                const teachers = await api.get('/principal/teachers');
+                renderTeachers(teachers);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderTeachers(teachers) {
+            const tbody = document.getElementById('teachersTable');
+            if (!teachers || teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-secondary">No teachers found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = teachers.map(t => `
+                <tr>
+                    <td>${t.employee_id || '-'}</td>
+                    <td><strong>${t.last_name}, ${t.first_name} ${t.middle_name || ''}</strong></td>
+                    <td>${t.department || '-'}</td>
+                    <td>${t.specialization || '-'}</td>
+                    <td>${t.contact_number || '-'}</td>
+                    <td>${t.is_adviser ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-info">No</span>'}</td>
+                    <td>${t.advised_sections.map(s => s.name).join(', ') || '-'}</td>
+                    <td>${t.subjects_count} assigned</td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', debounce(async (e) => {
+            const search = e.target.value.toLowerCase();
+            try {
+                const teachers = await api.get('/principal/teachers');
+                const filtered = teachers.filter(t =>
+                    t.first_name.toLowerCase().includes(search) ||
+                    t.last_name.toLowerCase().includes(search) ||
+                    (t.employee_id && t.employee_id.toLowerCase().includes(search))
+                );
+                renderTeachers(filtered);
+            } catch (err) {
+                console.error(err);
+            }
+        }, 300));
+
+        loadTeachers();
+    </script>
+</body>
+</html>

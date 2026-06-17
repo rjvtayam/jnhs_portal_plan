@@ -7,6 +7,7 @@ from app.routes import (
     auth_router, student_router, teacher_router,
     grades_router, attendance_router, sections_router,
     enrollment_router, announcements_router,
+    system_router, principal_router,
 )
 
 settings = get_settings()
@@ -36,6 +37,8 @@ app.include_router(attendance_router)
 app.include_router(sections_router)
 app.include_router(enrollment_router)
 app.include_router(announcements_router)
+app.include_router(system_router)
+app.include_router(principal_router)
 
 
 @app.get("/api/health")

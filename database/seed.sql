@@ -109,3 +109,11 @@ INSERT INTO subjects (code, name, grade_level, track, semester, is_specialized) 
 -- Default Admin User (password: admin123)
 INSERT INTO users (username, password_hash, role, email) VALUES
 ('admin', '$2b$12$LJ3m4ys4Gz8k5Q8q5Q8q5uQ8q5Q8q5Q8q5Q8q5Q8q5Q8q5Q8q5', 'admin', 'admin@jnhs.edu.ph');
+
+-- Super Admin (password: superadmin123)
+INSERT INTO users (username, password_hash, role, email) VALUES
+('superadmin', '$2b$12$LJ3m4ys4Gz8k5Q8q5Q8q5uQ8q5Q8q5Q8q5Q8q5Q8q5Q8q5Q8q5', 'super_admin', 'superadmin@jnhs.edu.ph');
+
+-- Principal (password: principal123)
+INSERT INTO users (username, password_hash, role, email) VALUES
+('principal', '$2b$12$LJ3m4ys4Gz8k5Q8q5Q8q5uQ8q5Q8q5Q8q5Q8q5Q8q5Q8q5Q8q5', 'principal', 'principal@jnhs.edu.ph');

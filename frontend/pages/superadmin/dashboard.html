@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitor - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .health-indicator {
+            width: 12px; height: 12px; border-radius: 50%;
+            display: inline-block; margin-right: 8px;
+        }
+        .health-green { background: #38a169; }
+        .health-red { background: #e53e3e; }
+        .health-yellow { background: #d69e2e; }
+        .metric-card {
+            background: white; border-radius: 8px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metric-card h4 { font-size: 0.8rem; color: #718096; text-transform: uppercase; margin-bottom: 8px; }
+        .metric-card .value { font-size: 2rem; font-weight: 700; color: #2d3748; }
+        .metric-card .unit { font-size: 0.85rem; color: #718096; }
+        .log-entry {
+            padding: 12px 15px; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-level {
+            padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; min-width: 50px; text-align: center;
+        }
+        .log-info { background: #ebf8ff; color: #2b6cb0; }
+        .log-warning { background: #fffff0; color: #975a16; }
+        .log-error { background: #fff5f5; color: #9b2c2c; }
+        .log-success { background: #f0fff4; color: #276749; }
+        .tabs {
+            display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent;
+            margin-bottom: -2px; font-weight: 500; color: #718096; transition: all 0.2s;
+        }
+        .tab:hover { color: #2d3748; }
+        .tab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>System Monitor</h1>
+                    <p>JNHS Portal System Health & Performance</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                    <button class="btn btn-sm btn-outline" onclick="refreshAll()">Refresh</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid" id="healthStatus">
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="dbStatus">Checking...</h4>
+                            <p>Database Status</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalUsers">0</h4>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="activeUsers">0</h4>
+                            <p>Active Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="unresolvedErrors">0</h4>
+                            <p>Unresolved Errors</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="metric-card">
+                        <h4>Students</h4>
+                        <div class="value" id="metricStudents">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Teachers</h4>
+                        <div class="value" id="metricTeachers">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Sections</h4>
+                        <div class="value" id="metricSections">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Enrollments</h4>
+                        <div class="value" id="metricEnrolled">0</div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('logs')">System Logs</div>
+                    <div class="tab" onclick="switchTab('errors')">Error Logs</div>
+                    <div class="tab" onclick="switchTab('metrics')">Performance Metrics</div>
+                    <div class="tab" onclick="switchTab('users')">User Distribution</div>
+                </div>
+
+                <div id="tab-logs" class="card">
+                    <div class="card-header">
+                        <h3>Recent System Logs</h3>
+                        <select class="form-control" style="width:150px" id="logLevelFilter" onchange="loadLogs()">
+                            <option value="">All Levels</option>
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+                    <div class="card-body" id="logsContainer" style="max-height:400px;overflow-y:auto;">
+                        <p class="text-secondary">Loading logs...</p>
+                    </div>
+                </div>
+
+                <div id="tab-errors" class="card hidden">
+                    <div class="card-header">
+                        <h3>Error Logs</h3>
+                    </div>
+                    <div class="card-body" id="errorsContainer" style="max-height:400px;overflow-y:auto;">
+                        <p class="text-secondary">Loading errors...</p>
+                    </div>
+                </div>
+
+                <div id="tab-metrics" class="card hidden">
+                    <div class="card-header">
+                        <h3>Performance Metrics (Last 24h)</h3>
+                    </div>
+                    <div class="card-body" id="metricsContainer" style="max-height:400px;overflow-y:auto;">
+                        <p class="text-secondary">Loading metrics...</p>
+                    </div>
+                </div>
+
+                <div id="tab-users" class="card hidden">
+                    <div class="card-header">
+                        <h3>User Distribution by Role</h3>
+                    </div>
+                    <div class="card-body" id="usersContainer">
+                        <p class="text-secondary">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('system-monitor');
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('[id^="tab-"]').forEach(c => c.classList.add('hidden'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+        }
+
+        async function loadHealth() {
+            try {
+                const health = await api.get('/system/health');
+                document.getElementById('dbStatus').textContent = health.database;
+                document.getElementById('totalUsers').textContent = health.stats.total_users;
+                document.getElementById('activeUsers').textContent = health.stats.active_users;
+                document.getElementById('metricStudents').textContent = health.stats.total_students;
+                document.getElementById('metricTeachers').textContent = health.stats.total_teachers;
+                document.getElementById('metricSections').textContent = health.stats.total_sections;
+                document.getElementById('metricEnrolled').textContent = health.stats.total_enrolled;
+            } catch (err) {
+                console.error('Health check failed:', err);
+                document.getElementById('dbStatus').textContent = 'Error';
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const level = document.getElementById('logLevelFilter').value;
+                const url = level ? `/system/logs?level=${level}` : '/system/logs';
+                const logs = await api.get(url);
+                const container = document.getElementById('logsContainer');
+                if (!logs || logs.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No logs found</p>';
+                    return;
+                }
+                container.innerHTML = logs.map(l => `
+                    <div class="log-entry">
+                        <span class="log-level log-${l.level}">${l.level}</span>
+                        <span style="color:#718096;font-size:0.8rem;min-width:140px;">${formatDateTime(l.created_at)}</span>
+                        <span style="flex:1;">${l.message}</span>
+                        <span style="color:#a0aec0;font-size:0.8rem;">${l.category}</span>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('logsContainer').innerHTML = '<p class="text-danger">Error loading logs</p>';
+            }
+        }
+
+        async function loadErrors() {
+            try {
+                const errors = await api.get('/system/errors');
+                const container = document.getElementById('errorsContainer');
+                if (!errors || errors.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No errors found</p>';
+                    return;
+                }
+                container.innerHTML = errors.map(e => `
+                    <div class="log-entry">
+                        <span class="log-level log-error">ERROR</span>
+                        <span style="color:#718096;font-size:0.8rem;min-width:140px;">${formatDateTime(e.created_at)}</span>
+                        <span style="flex:1;">
+                            <strong>${e.error_type}</strong><br>
+                            <span style="color:#718096;">${e.error_message}</span>
+                        </span>
+                        <span style="color:${e.resolved ? '#38a169' : '#d69e2e'};font-size:0.8rem;">
+                            ${e.resolved ? 'Resolved' : 'Unresolved'}
+                        </span>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('errorsContainer').innerHTML = '<p class="text-danger">Error loading errors</p>';
+            }
+        }
+
+        async function loadMetrics() {
+            try {
+                const metrics = await api.get('/system/metrics?hours=24');
+                const container = document.getElementById('metricsContainer');
+                if (!metrics || metrics.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No metrics recorded yet</p>';
+                    return;
+                }
+                container.innerHTML = metrics.map(m => `
+                    <div class="log-entry">
+                        <span style="flex:1;"><strong>${m.metric_name}</strong></span>
+                        <span style="font-weight:600;">${m.metric_value} ${m.metric_unit || ''}</span>
+                        <span style="color:#718096;font-size:0.8rem;">${formatDateTime(m.recorded_at)}</span>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('metricsContainer').innerHTML = '<p class="text-danger">Error loading metrics</p>';
+            }
+        }
+
+        async function loadUserDistribution() {
+            try {
+                const overview = await api.get('/system/stats/overview');
+                const container = document.getElementById('usersContainer');
+                document.getElementById('unresolvedErrors').textContent = overview.unresolved_errors;
+
+                const roles = overview.users_by_role || {};
+                const roleLabels = {
+                    super_admin: 'Super Admin', admin: 'Admin', principal: 'Principal',
+                    teacher: 'Teacher', student: 'Student', parent: 'Parent', registrar: 'Registrar'
+                };
+                const roleColors = {
+                    super_admin: '#e53e3e', admin: '#3182ce', principal: '#38a169',
+                    teacher: '#d69e2e', student: '#4299e1', parent: '#805ad5', registrar: '#dd6b20'
+                };
+
+                const total = Object.values(roles).reduce((a, b) => a + b, 0);
+                container.innerHTML = Object.entries(roles).map(([role, count]) => `
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                        <div style="width:120px;font-size:0.9rem;font-weight:500;">${roleLabels[role] || role}</div>
+                        <div style="flex:1;background:#e2e8f0;border-radius:4px;height:24px;overflow:hidden;">
+                            <div style="height:100%;width:${(count/total*100)}%;background:${roleColors[role] || '#718096'};border-radius:4px;transition:width 0.3s;"></div>
+                        </div>
+                        <div style="width:60px;text-align:right;font-weight:600;">${count}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('usersContainer').innerHTML = '<p class="text-danger">Error loading stats</p>';
+            }
+        }
+
+        function refreshAll() {
+            loadHealth();
+            loadLogs();
+            loadErrors();
+            loadMetrics();
+            loadUserDistribution();
+        }
+
+        refreshAll();
+    </script>
+</body>
+</html>

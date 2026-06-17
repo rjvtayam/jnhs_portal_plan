@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Principal Dashboard - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Principal Dashboard</h1>
+                    <p>Jomalig National High School Overview</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalStudents">0</h4>
+                            <p>Total Students</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalTeachers">0</h4>
+                            <p>Total Teachers</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalSections">0</h4>
+                            <p>Total Sections</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalSubjects">0</h4>
+                            <p>Total Subjects</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="jhsStudents">0</h4>
+                            <p>JHS Students</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="shsStudents">0</h4>
+                            <p>SHS Students</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Grade Performance Summary</h3>
+                        </div>
+                        <div class="card-body" id="gradeSummary">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Announcements</h3>
+                        </div>
+                        <div class="card-body" id="recentAnnouncements">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('principal-dashboard');
+
+        async function loadDashboard() {
+            try {
+                const data = await api.get('/principal/dashboard');
+                document.getElementById('totalStudents').textContent = data.total_students;
+                document.getElementById('totalTeachers').textContent = data.total_teachers;
+                document.getElementById('totalSections').textContent = data.total_sections;
+                document.getElementById('totalSubjects').textContent = data.total_subjects;
+                document.getElementById('jhsStudents').textContent = data.jhs_students;
+                document.getElementById('shsStudents').textContent = data.shs_students;
+            } catch (err) {
+                console.error(err);
+            }
+
+            try {
+                const grades = await api.get('/principal/grades/summary');
+                const container = document.getElementById('gradeSummary');
+                container.innerHTML = `
+                    <div style="margin-bottom:15px;">
+                        <div style="font-size:0.85rem;color:#718096;">School Average Grade</div>
+                        <div style="font-size:1.8rem;font-weight:700;color:#1e3a5f;">${grades.average_grade}</div>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <div style="font-size:0.85rem;color:#718096;">Passing Rate (75+)</div>
+                        <div style="font-size:1.8rem;font-weight:700;color:#38a169;">${grades.passing_rate}%</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.85rem;color:#718096;">Total Grades Encoded</div>
+                        <div style="font-size:1.8rem;font-weight:700;color:#4299e1;">${grades.total_grades}</div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error(err);
+            }
+
+            try {
+                const announcements = await api.get('/principal/announcements');
+                const container = document.getElementById('recentAnnouncements');
+                if (!announcements || announcements.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No announcements</p>';
+                    return;
+                }
+                container.innerHTML = announcements.slice(0, 5).map(a => `
+                    <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;">
+                            <strong>${a.title}</strong>
+                            <span class="badge badge-${a.priority === 'high' ? 'danger' : 'info'}">${a.priority}</span>
+                        </div>
+                        <p style="font-size:0.85rem;color:#718096;margin-top:4px;">${formatDateTime(a.created_at)}</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

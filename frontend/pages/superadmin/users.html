@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Users - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .role-card {
+            background: white; border-radius: 8px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid;
+        }
+        .role-card h4 { margin-bottom: 10px; }
+        .role-card .count { font-size: 2rem; font-weight: 700; }
+        .role-list { list-style: none; padding: 0; }
+        .role-list li { padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .role-list li:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>User Management</h1>
+                    <p>System user accounts and roles</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="role-card" style="border-color:#e53e3e;">
+                        <h4>Super Admin</h4>
+                        <div class="count" id="countSuperAdmin">0</div>
+                        <p class="text-secondary">System Monitor</p>
+                    </div>
+                    <div class="role-card" style="border-color:#3182ce;">
+                        <h4>Admin</h4>
+                        <div class="count" id="countAdmin">0</div>
+                        <p class="text-secondary">School Admin</p>
+                    </div>
+                    <div class="role-card" style="border-color:#38a169;">
+                        <h4>Principal</h4>
+                        <div class="count" id="countPrincipal">0</div>
+                        <p class="text-secondary">School Head</p>
+                    </div>
+                    <div class="role-card" style="border-color:#d69e2e;">
+                        <h4>Teachers</h4>
+                        <div class="count" id="countTeacher">0</div>
+                        <p class="text-secondary">Faculty Members</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="role-card" style="border-color:#4299e1;">
+                        <h4>Students</h4>
+                        <div class="count" id="countStudent">0</div>
+                        <p class="text-secondary">Enrolled Learners</p>
+                    </div>
+                    <div class="role-card" style="border-color:#805ad5;">
+                        <h4>Parents</h4>
+                        <div class="count" id="countParent">0</div>
+                        <p class="text-secondary">Guardians</p>
+                    </div>
+                    <div class="role-card" style="border-color:#dd6b20;">
+                        <h4>Registrar</h4>
+                        <div class="count" id="countRegistrar">0</div>
+                        <p class="text-secondary">Records Officer</p>
+                    </div>
+                    <div class="role-card" style="border-color:#718096;">
+                        <h4>Total Users</h4>
+                        <div class="count" id="countTotal">0</div>
+                        <p class="text-secondary">All Accounts</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>User Activity</h3>
+                        </div>
+                        <div class="card-body" id="userActivity">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Registrations</h3>
+                        </div>
+                        <div class="card-body" id="recentUsers">
+                            <p class="text-secondary">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('system-monitor');
+
+        async function loadUsers() {
+            try {
+                const overview = await api.get('/system/stats/overview');
+                const roles = overview.users_by_role || {};
+
+                document.getElementById('countSuperAdmin').textContent = roles.super_admin || 0;
+                document.getElementById('countAdmin').textContent = roles.admin || 0;
+                document.getElementById('countPrincipal').textContent = roles.principal || 0;
+                document.getElementById('countTeacher').textContent = roles.teacher || 0;
+                document.getElementById('countStudent').textContent = roles.student || 0;
+                document.getElementById('countParent').textContent = roles.parent || 0;
+                document.getElementById('countRegistrar').textContent = roles.registrar || 0;
+                document.getElementById('countTotal').textContent = Object.values(roles).reduce((a, b) => a + b, 0);
+
+                const activityContainer = document.getElementById('userActivity');
+                const total = Object.values(roles).reduce((a, b) => a + b, 0);
+                activityContainer.innerHTML = Object.entries(roles).map(([role, count]) => {
+                    const pct = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                    return `
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="width:100px;font-size:0.85rem;font-weight:500;text-transform:capitalize;">${role.replace('_', ' ')}</div>
+                            <div style="flex:1;background:#e2e8f0;border-radius:4px;height:20px;overflow:hidden;">
+                                <div style="height:100%;width:${pct}%;background:#3182ce;border-radius:4px;"></div>
+                            </div>
+                            <div style="width:80px;text-align:right;font-size:0.85rem;">${count} (${pct}%)</div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
