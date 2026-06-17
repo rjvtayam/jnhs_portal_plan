@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sections - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>My Sections</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div id="sectionsContainer">
+                    <p class="text-secondary">Loading sections...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('sections');
+
+        async function loadSections() {
+            try {
+                const sections = await api.get('/teacher/sections');
+                const container = document.getElementById('sectionsContainer');
+
+                if (!sections || sections.length === 0) {
+                    container.innerHTML = '<div class="card"><div class="card-body"><p class="text-secondary">No sections assigned yet.</p></div></div>';
+                    return;
+                }
+
+                container.innerHTML = sections.map(s => `
+                    <div class="card" style="margin-bottom:15px;">
+                        <div class="card-header">
+                            <h3>Grade ${s.grade_level} - ${s.name}</h3>
+                            <span style="color:#718096;">${s.track || 'General'}</span>
+                        </div>
+                        <div class="card-body">
+                            <p style="margin-bottom:10px;"><strong>${s.students || 0} students</strong></p>
+                            <h4 style="margin-bottom:8px;color:#718096;font-size:0.9rem;">Assigned Subjects</h4>
+                            <table style="width:100%;border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:#f7fafc;">
+                                        <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th>
+                                        <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Code</th>
+                                        <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Schedule</th>
+                                        <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Room</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(s.subjects || []).map(sub => `
+                                        <tr>
+                                            <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${sub.name}</td>
+                                            <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${sub.code}</td>
+                                            <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${sub.schedule || 'TBA'}</td>
+                                            <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${sub.room || 'TBA'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <div style="margin-top:15px;display:flex;gap:10px;">
+                                <a href="/pages/teacher/grade-entry.html?section=${s.id}" class="btn btn-primary">Enter Grades</a>
+                                <a href="/pages/teacher/attendance.html?section=${s.id}" class="btn btn-secondary">Record Attendance</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadSections();
+    </script>
+</body>
+</html>

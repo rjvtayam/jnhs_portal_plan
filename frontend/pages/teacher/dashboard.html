@@ -38,8 +38,8 @@
                     <div class="stat-card">
                         <div class="stat-icon yellow">&#9632;</div>
                         <div class="stat-info">
-                            <h4 id="pendingGrades">0</h4>
-                            <p>Pending Grades</p>
+                            <h4 id="mySubjects">0</h4>
+                            <p>Assigned Subjects</p>
                         </div>
                     </div>
                 </div>
@@ -57,11 +57,20 @@
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3>Announcements</h3>
+                            <h3>My Sections</h3>
                         </div>
-                        <div class="card-body" id="teacherAnnouncements">
+                        <div class="card-body" id="sectionsList">
                             <p class="text-secondary">Loading...</p>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header">
+                        <h3>Announcements</h3>
+                    </div>
+                    <div class="card-body" id="announcementsList">
+                        <p class="text-secondary">Loading...</p>
                     </div>
                 </div>
             </div>
@@ -72,10 +81,61 @@
     <script src="/js/utils.js"></script>
     <script>
         initDashboard('dashboard');
-        const user = Auth.getUser();
-        if (user) {
-            document.getElementById('teacherName').textContent = user.username;
+
+        async function loadDashboard() {
+            try {
+                const data = await api.get('/teacher/dashboard');
+
+                document.getElementById('teacherName').textContent = data.teacher.name;
+                document.getElementById('mySections').textContent = data.advised_sections;
+                document.getElementById('myStudents').textContent = data.total_students;
+                document.getElementById('mySubjects').textContent = data.assigned_subjects;
+
+                const sectionsList = document.getElementById('sectionsList');
+                if (data.sections && data.sections.length > 0) {
+                    sectionsList.innerHTML = data.sections.map(s => `
+                        <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+                            <div style="font-weight:600;">Grade ${s.grade_level} - ${s.name}</div>
+                            <div style="font-size:0.85rem;color:#718096;">${s.track || 'General'} | ${s.student_count} students</div>
+                            <div style="margin-top:8px;display:flex;gap:6px;">
+                                <a href="/pages/teacher/grade-entry.html?section=${s.id}" class="btn btn-primary" style="font-size:0.8rem;padding:4px 10px;">Grades</a>
+                                <a href="/pages/teacher/attendance.html?section=${s.id}" class="btn btn-secondary" style="font-size:0.8rem;padding:4px 10px;">Attendance</a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    sectionsList.innerHTML = '<p class="text-secondary">No sections assigned</p>';
+                }
+
+                loadAnnouncements();
+            } catch (err) {
+                console.error(err);
+            }
         }
+
+        async function loadAnnouncements() {
+            try {
+                const announcements = await api.get('/announcements');
+                const container = document.getElementById('announcementsList');
+
+                if (!announcements || announcements.length === 0) {
+                    container.innerHTML = '<p class="text-secondary">No announcements</p>';
+                    return;
+                }
+
+                container.innerHTML = announcements.slice(0, 5).map(a => `
+                    <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+                        <div style="font-weight:600;">${a.title}</div>
+                        <div style="font-size:0.85rem;color:#718096;">${formatDateTime(a.created_at)}</div>
+                        <p style="margin-top:5px;font-size:0.9rem;">${a.content.substring(0, 100)}...</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadDashboard();
     </script>
 </body>
 </html>

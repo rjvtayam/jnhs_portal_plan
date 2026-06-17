@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .att-btn {
+            padding: 6px 14px; border: 2px solid #e2e8f0; border-radius: 6px;
+            cursor: pointer; font-weight: 500; transition: all 0.2s; background: white;
+        }
+        .att-btn:hover { border-color: #3182ce; }
+        .att-btn.active-present { background: #c6f6d5; border-color: #276749; color: #276749; }
+        .att-btn.active-absent { background: #fed7d7; border-color: #9b2c2c; color: #9b2c2c; }
+        .att-btn.active-late { background: #fefcbf; border-color: #975a16; color: #975a16; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Record Attendance</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-body">
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label>Section</label>
+                                <select class="form-control" id="sectionSelect" onchange="loadAttendance()">
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" class="form-control" id="dateSelect" onchange="loadAttendance()">
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" style="width:100%" onclick="saveAttendance()">Save Attendance</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="attendanceCard" style="display:none;">
+                    <div class="card-header">
+                        <h3>Student Attendance</h3>
+                        <span id="attendanceSummary" style="color:#718096;"></span>
+                    </div>
+                    <div class="card-body">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#1e3a5f;color:white;">
+                                    <th style="padding:10px;text-align:left;">Student</th>
+                                    <th style="padding:10px;text-align:left;">LRN</th>
+                                    <th style="padding:10px;text-align:center;">Status</th>
+                                    <th style="padding:10px;text-align:left;">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('attendance');
+
+        const params = new URLSearchParams(window.location.search);
+        let selectedSection = params.get('section') || '';
+
+        document.getElementById('dateSelect').value = new Date().toISOString().split('T')[0];
+
+        async function loadSections() {
+            try {
+                const sections = await api.get('/teacher/sections');
+                const select = document.getElementById('sectionSelect');
+                select.innerHTML = '<option value="">Select Section</option>' +
+                    sections.map(s => `<option value="${s.id}" ${s.id == selectedSection ? 'selected' : ''}>Grade ${s.grade_level} - ${s.name}</option>`).join('');
+
+                if (selectedSection) loadAttendance();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadAttendance() {
+            const sectionId = document.getElementById('sectionSelect').value;
+            const dateStr = document.getElementById('dateSelect').value;
+            if (!sectionId || !dateStr) return;
+
+            try {
+                const students = await api.get(`/teacher/attendance/${sectionId}?date_str=${dateStr}`);
+                const tbody = document.getElementById('attendanceBody');
+                const card = document.getElementById('attendanceCard');
+                card.style.display = 'block';
+
+                const summary = document.getElementById('attendanceSummary');
+                const present = students.filter(s => s.status === 'present').length;
+                const absent = students.filter(s => s.status === 'absent').length;
+                const late = students.filter(s => s.status === 'late').length;
+                summary.textContent = `${students.length} students | Present: ${present} | Absent: ${absent} | Late: ${late}`;
+
+                tbody.innerHTML = students.map((s, i) => `
+                    <tr style="background:${i % 2 === 0 ? 'white' : '#f7fafc'};" data-student-id="${s.student_id}">
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:500;">${s.student_name}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#718096;">${s.lrn}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">
+                            <button class="att-btn ${s.status === 'present' ? 'active-present' : ''}" onclick="setAttendance(this, 'present')">Present</button>
+                            <button class="att-btn ${s.status === 'absent' ? 'active-absent' : ''}" onclick="setAttendance(this, 'absent')">Absent</button>
+                            <button class="att-btn ${s.status === 'late' ? 'active-late' : ''}" onclick="setAttendance(this, 'late')">Late</button>
+                        </td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+                            <input type="text" class="form-control" placeholder="Optional remarks" data-student-id="${s.student_id}" data-field="remarks" style="width:100%;">
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function setAttendance(btn, status) {
+            const row = btn.closest('tr');
+            row.querySelectorAll('.att-btn').forEach(b => {
+                b.className = 'att-btn';
+            });
+            btn.classList.add(`active-${status}`);
+            row.dataset.status = status;
+        }
+
+        async function saveAttendance() {
+            const sectionId = document.getElementById('sectionSelect').value;
+            const dateStr = document.getElementById('dateSelect').value;
+
+            if (!sectionId) {
+                showNotification('Please select a section', 'error');
+                return;
+            }
+
+            const rows = document.querySelectorAll('#attendanceBody tr');
+            const entries = [];
+
+            rows.forEach(row => {
+                const studentId = row.dataset.studentId;
+                const status = row.dataset.status;
+                const remarksInput = row.querySelector('[data-field="remarks"]');
+                const remarks = remarksInput ? remarksInput.value : '';
+
+                if (status) {
+                    entries.push({
+                        student_id: parseInt(studentId),
+                        section_id: parseInt(sectionId),
+                        date: dateStr,
+                        status: status,
+                        remarks: remarks || null,
+                    });
+                }
+            });
+
+            if (entries.length === 0) {
+                showNotification('No attendance records to save', 'error');
+                return;
+            }
+
+            try {
+                await api.post('/teacher/attendance/save', entries);
+                showNotification(`Saved ${entries.length} attendance record(s)`);
+                loadAttendance();
+            } catch (err) {
+                showNotification(err.message || 'Error saving attendance', 'error');
+            }
+        }
+
+        loadSections();
+    </script>
+</body>
+</html>
