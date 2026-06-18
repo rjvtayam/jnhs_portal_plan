@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - JNHS Portal</title>
     <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -51,23 +52,32 @@
                     </div>
                 </div>
 
-                <div class="grid-2">
+                <div class="grid-2 mb-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Recent Announcements</h3>
-                            <a href="/pages/admin/announcements.html" class="btn btn-sm btn-outline">View All</a>
+                            <h3>Enrollment by Grade Level</h3>
                         </div>
-                        <div class="card-body" id="recentAnnouncements">
-                            <p class="text-secondary">Loading...</p>
+                        <div class="card-body">
+                            <canvas id="enrollmentChart"></canvas>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3>Upcoming Events</h3>
+                            <h3>Student Distribution</h3>
                         </div>
-                        <div class="card-body" id="upcomingEvents">
-                            <p class="text-secondary">Loading...</p>
+                        <div class="card-body">
+                            <canvas id="genderChart"></canvas>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Announcements</h3>
+                        <a href="/pages/admin/announcements.html" class="btn btn-sm btn-outline">View All</a>
+                    </div>
+                    <div class="card-body" id="recentAnnouncements">
+                        <p class="text-secondary">Loading...</p>
                     </div>
                 </div>
             </div>
@@ -79,35 +89,138 @@
     <script>
         initDashboard('dashboard');
 
+        let enrollmentChartInstance = null;
+        let genderChartInstance = null;
+
+        const chartColors = {
+            pink: '#e91e63',
+            cyan: '#00e5ff',
+            purple: '#7c4dff',
+            pinkAlpha: 'rgba(233, 30, 99, 0.15)',
+            cyanAlpha: 'rgba(0, 229, 255, 0.15)',
+            purpleAlpha: 'rgba(124, 77, 255, 0.15)',
+        };
+
+        function renderEnrollmentChart(enrollments) {
+            const gradeMap = {};
+            (enrollments || []).forEach(e => {
+                const grade = e.grade_level || e.grade || e.section?.grade_level || 'Unknown';
+                gradeMap[grade] = (gradeMap[grade] || 0) + 1;
+            });
+
+            const labels = Object.keys(gradeMap).sort();
+            const data = labels.map(l => gradeMap[l]);
+            const bgColors = labels.map((_, i) => {
+                const palette = [chartColors.pink, chartColors.cyan, chartColors.purple];
+                return palette[i % palette.length];
+            });
+
+            if (enrollmentChartInstance) enrollmentChartInstance.destroy();
+
+            const ctx = document.getElementById('enrollmentChart').getContext('2d');
+            enrollmentChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Enrolled Students',
+                        data: data,
+                        backgroundColor: bgColors,
+                        borderColor: bgColors,
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 36,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#7c7f9e' },
+                            grid: { color: 'rgba(26, 26, 62, 0.5)' },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#7c7f9e', stepSize: 1 },
+                            grid: { color: 'rgba(26, 26, 62, 0.5)' },
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderGenderChart(students) {
+            let male = 0;
+            let female = 0;
+            (students || []).forEach(s => {
+                const g = (s.gender || '').toLowerCase();
+                if (g === 'male' || g === 'm') male++;
+                else if (g === 'female' || g === 'f') female++;
+            });
+
+            if (genderChartInstance) genderChartInstance.destroy();
+
+            const ctx = document.getElementById('genderChart').getContext('2d');
+            genderChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        data: [male, female],
+                        backgroundColor: [chartColors.cyan, chartColors.pink],
+                        borderColor: [chartColors.cyan, chartColors.pink],
+                        borderWidth: 2,
+                        hoverOffset: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e8eaf6',
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyleWidth: 12,
+                            }
+                        },
+                    }
+                }
+            });
+        }
+
         async function loadDashboard() {
             try {
-                const [students, teachers, sections, announcements, events] = await Promise.all([
+                const [students, teachers, sections, announcements, enrollments] = await Promise.all([
                     api.get('/students/').catch(() => []),
                     api.get('/teachers/').catch(() => []),
                     api.get('/sections/').catch(() => []),
                     api.get('/announcements').catch(() => []),
-                    api.get('/events').catch(() => []),
+                    api.get('/enrollment/').catch(() => []),
                 ]);
 
                 document.getElementById('totalStudents').textContent = students.length || 0;
                 document.getElementById('totalTeachers').textContent = teachers.length || 0;
                 document.getElementById('totalSections').textContent = sections.length || 0;
+                document.getElementById('totalEnrolled').textContent = enrollments.length || 0;
+
+                renderEnrollmentChart(enrollments);
+                renderGenderChart(students);
 
                 const announcementsHtml = (announcements || []).slice(0, 5).map(a => `
-                    <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
-                        <strong>${a.title}</strong>
-                        <p style="font-size: 0.85rem; color: #718096;">${formatDate(a.created_at)}</p>
+                    <div style="padding: 10px 0; border-bottom: 1px solid #1a1a3e;">
+                        <strong style="color: #e8eaf6;">${a.title}</strong>
+                        <p style="font-size: 0.85rem; color: #7c7f9e;">${formatDate(a.created_at)}</p>
                     </div>
                 `).join('');
                 document.getElementById('recentAnnouncements').innerHTML = announcementsHtml || '<p class="text-secondary">No announcements</p>';
-
-                const eventsHtml = (events || []).slice(0, 5).map(e => `
-                    <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
-                        <strong>${e.title}</strong>
-                        <p style="font-size: 0.85rem; color: #718096;">${formatDate(e.event_date || e.date)}</p>
-                    </div>
-                `).join('');
-                document.getElementById('upcomingEvents').innerHTML = eventsHtml || '<p class="text-secondary">No upcoming events</p>';
             } catch (err) {
                 console.error('Dashboard load error:', err);
             }

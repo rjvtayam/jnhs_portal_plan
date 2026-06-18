@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - JNHS Portal</title>
     <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -44,7 +45,7 @@
                     </div>
                 </div>
 
-                <div class="grid-2">
+                <div class="grid-2 mb-3">
                     <div class="card">
                         <div class="card-header">
                             <h3>Quick Actions</h3>
@@ -52,7 +53,7 @@
                         <div class="card-body">
                             <a href="/pages/teacher/grade-entry.html" class="btn btn-primary mb-2" style="width:100%">Enter Grades</a>
                             <a href="/pages/teacher/attendance.html" class="btn btn-secondary mb-2" style="width:100%">Record Attendance</a>
-                            <a href="/pages/teacher/my-sections.html" class="btn btn-outline mb-2" style="width:100%">View My Sections</a>
+                            <a href="/pages/teacher/my-sections.html" class="btn btn-outline mb-2" style="width:100%">View Sections</a>
                         </div>
                     </div>
                     <div class="card">
@@ -65,7 +66,18 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-top:20px;">
+                <div class="grid-2 mb-3">
+                    <div class="chart-card">
+                        <h3 style="margin-bottom:16px;font-weight:600;">Students per Section</h3>
+                        <canvas id="sectionsChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 style="margin-bottom:16px;font-weight:600;">Subjects Distribution</h3>
+                        <canvas id="subjectsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
                     <div class="card-header">
                         <h3>Announcements</h3>
                     </div>
@@ -82,6 +94,108 @@
     <script>
         initDashboard('dashboard');
 
+        let sectionsChart = null;
+        let subjectsChart = null;
+
+        function renderSectionsChart(sections) {
+            const labels = sections.map(s => `${s.name}`);
+            const data = sections.map(s => s.student_count || 0);
+            const ctx = document.getElementById('sectionsChart').getContext('2d');
+
+            if (sectionsChart) sectionsChart.destroy();
+            sectionsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Students',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(233, 30, 99, 0.7)',
+                            'rgba(0, 229, 255, 0.7)',
+                            'rgba(124, 77, 255, 0.7)',
+                            'rgba(255, 0, 128, 0.7)',
+                            'rgba(41, 121, 255, 0.7)',
+                            'rgba(0, 230, 118, 0.7)'
+                        ],
+                        borderColor: [
+                            '#e91e63',
+                            '#00e5ff',
+                            '#7c4dff',
+                            '#ff0080',
+                            '#2979ff',
+                            '#00e676'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#7c7f9e', font: { size: 11 } },
+                            grid: { color: 'rgba(26, 26, 62, 0.5)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#7c7f9e', stepSize: 5 },
+                            grid: { color: 'rgba(26, 26, 62, 0.5)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderSubjectsChart(subjects) {
+            if (!subjects || subjects.length === 0) {
+                document.getElementById('subjectsChart').parentElement.innerHTML =
+                    '<h3 style="margin-bottom:16px;font-weight:600;">Subjects Distribution</h3><p class="text-secondary">No subject data</p>';
+                return;
+            }
+            const labels = subjects.map(s => s.name || s.subject_name || 'Unknown');
+            const data = subjects.map(s => s.count || s.student_count || 0);
+            const ctx = document.getElementById('subjectsChart').getContext('2d');
+            const neonColors = ['#e91e63', '#00e5ff', '#7c4dff', '#ff0080', '#2979ff', '#00e676', '#ffc107', '#ff5252'];
+
+            if (subjectsChart) subjectsChart.destroy();
+            subjectsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: neonColors.slice(0, labels.length).map(c => c + 'cc'),
+                        borderColor: neonColors.slice(0, labels.length),
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#7c7f9e',
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyleWidth: 10,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         async function loadDashboard() {
             try {
                 const data = await api.get('/teacher/dashboard');
@@ -94,17 +208,23 @@
                 const sectionsList = document.getElementById('sectionsList');
                 if (data.sections && data.sections.length > 0) {
                     sectionsList.innerHTML = data.sections.map(s => `
-                        <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
-                            <div style="font-weight:600;">Grade ${s.grade_level} - ${s.name}</div>
-                            <div style="font-size:0.85rem;color:#718096;">${s.track || 'General'} | ${s.student_count} students</div>
+                        <div style="padding:12px 0;border-bottom:1px solid var(--border-color);">
+                            <div style="font-weight:600;color:var(--text-primary);">Grade ${s.grade_level} - ${s.name}</div>
+                            <div style="font-size:0.85rem;color:var(--text-secondary);">${s.track || 'General'} | ${s.student_count} students</div>
                             <div style="margin-top:8px;display:flex;gap:6px;">
                                 <a href="/pages/teacher/grade-entry.html?section=${s.id}" class="btn btn-primary" style="font-size:0.8rem;padding:4px 10px;">Grades</a>
                                 <a href="/pages/teacher/attendance.html?section=${s.id}" class="btn btn-secondary" style="font-size:0.8rem;padding:4px 10px;">Attendance</a>
                             </div>
                         </div>
                     `).join('');
+
+                    renderSectionsChart(data.sections);
                 } else {
                     sectionsList.innerHTML = '<p class="text-secondary">No sections assigned</p>';
+                }
+
+                if (data.subjects && data.subjects.length > 0) {
+                    renderSubjectsChart(data.subjects);
                 }
 
                 loadAnnouncements();
@@ -124,10 +244,10 @@
                 }
 
                 container.innerHTML = announcements.slice(0, 5).map(a => `
-                    <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
-                        <div style="font-weight:600;">${a.title}</div>
-                        <div style="font-size:0.85rem;color:#718096;">${formatDateTime(a.created_at)}</div>
-                        <p style="margin-top:5px;font-size:0.9rem;">${a.content.substring(0, 100)}...</p>
+                    <div style="padding:12px 0;border-bottom:1px solid var(--border-color);">
+                        <div style="font-weight:600;color:var(--text-primary);">${a.title}</div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary);">${formatDateTime(a.created_at)}</div>
+                        <p style="margin-top:5px;font-size:0.9rem;color:var(--text-primary);">${a.content.substring(0, 100)}...</p>
                     </div>
                 `).join('');
             } catch (err) {

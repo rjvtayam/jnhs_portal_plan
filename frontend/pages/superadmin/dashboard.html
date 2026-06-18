@@ -5,43 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Monitor - JNHS Portal</title>
     <link rel="stylesheet" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .health-indicator {
-            width: 12px; height: 12px; border-radius: 50%;
-            display: inline-block; margin-right: 8px;
+        body { background: #0a0e1a; color: #e0e0e0; }
+        .dashboard { background: #0a0e1a; }
+        .main-content { background: #0a0e1a; }
+        .topbar { background: linear-gradient(135deg, #0d1224, #1a1e3a); border-bottom: 1px solid #1e2a4a; }
+        .topbar-title h1 { color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+        .topbar-title p { color: #8892b0; }
+        .topbar-actions .btn-outline { border-color: #7c4dff; color: #7c4dff; background: transparent; }
+        .topbar-actions .btn-outline:hover { background: rgba(124,77,255,0.15); box-shadow: 0 0 12px rgba(124,77,255,0.3); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: linear-gradient(145deg, #111827, #1a1e3a);
+            border: 1px solid #1e2a4a; border-radius: 12px;
+            padding: 20px; display: flex; align-items: center; gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .health-green { background: #38a169; }
-        .health-red { background: #e53e3e; }
-        .health-yellow { background: #d69e2e; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,229,255,0.1); }
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 700;
+        }
+        .stat-icon.green { background: linear-gradient(135deg, rgba(56,161,105,0.2), rgba(0,229,255,0.15)); color: #00e5ff; border: 1px solid rgba(0,229,255,0.3); }
+        .stat-icon.blue { background: linear-gradient(135deg, rgba(49,130,206,0.2), rgba(124,77,255,0.15)); color: #7c4dff; border: 1px solid rgba(124,77,255,0.3); }
+        .stat-icon.yellow { background: linear-gradient(135deg, rgba(214,158,46,0.2), rgba(233,30,99,0.15)); color: #e91e63; border: 1px solid rgba(233,30,99,0.3); }
+        .stat-icon.red { background: linear-gradient(135deg, rgba(229,62,62,0.2), rgba(233,30,99,0.2)); color: #e91e63; border: 1px solid rgba(233,30,99,0.3); }
+        .stat-info h4 { font-size: 1.5rem; font-weight: 700; color: #e0e0e0; margin: 0; }
+        .stat-info p { font-size: 0.85rem; color: #8892b0; margin: 2px 0 0; }
+        .stat-icon.green::after { content: ""; position: absolute; width: 48px; height: 48px; border-radius: 12px; background: radial-gradient(circle, rgba(0,229,255,0.15), transparent 70%); pointer-events: none; }
+
+        .health-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .health-green { background: #00e5ff; box-shadow: 0 0 8px rgba(0,229,255,0.6); }
+        .health-red { background: #e91e63; box-shadow: 0 0 8px rgba(233,30,99,0.6); }
+        .health-yellow { background: #d69e2e; box-shadow: 0 0 8px rgba(214,158,46,0.6); }
+
         .metric-card {
-            background: white; border-radius: 8px; padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: linear-gradient(145deg, #111827, #1a1e3a);
+            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px;
         }
-        .metric-card h4 { font-size: 0.8rem; color: #718096; text-transform: uppercase; margin-bottom: 8px; }
-        .metric-card .value { font-size: 2rem; font-weight: 700; color: #2d3748; }
-        .metric-card .unit { font-size: 0.85rem; color: #718096; }
+        .metric-card h4 { font-size: 0.8rem; color: #8892b0; text-transform: uppercase; margin-bottom: 8px; }
+        .metric-card .value { font-size: 2rem; font-weight: 700; color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+        .metric-card .unit { font-size: 0.85rem; color: #8892b0; }
+
+        .card {
+            background: linear-gradient(145deg, #111827, #1a1e3a);
+            border: 1px solid #1e2a4a; border-radius: 12px; margin-bottom: 24px;
+        }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid #1e2a4a; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { color: #e0e0e0; margin: 0; font-size: 1rem; }
+        .card-body { padding: 20px; }
+
         .log-entry {
-            padding: 12px 15px; border-bottom: 1px solid #e2e8f0;
+            padding: 12px 15px; border-bottom: 1px solid #1e2a4a;
             display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
         }
         .log-entry:last-child { border-bottom: none; }
+        .log-entry:hover { background: rgba(0,229,255,0.03); }
         .log-level {
             padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;
             text-transform: uppercase; min-width: 50px; text-align: center;
         }
-        .log-info { background: #ebf8ff; color: #2b6cb0; }
-        .log-warning { background: #fffff0; color: #975a16; }
-        .log-error { background: #fff5f5; color: #9b2c2c; }
-        .log-success { background: #f0fff4; color: #276749; }
-        .tabs {
-            display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px;
-        }
+        .log-info { background: rgba(0,229,255,0.1); color: #00e5ff; border: 1px solid rgba(0,229,255,0.2); }
+        .log-warning { background: rgba(214,158,46,0.1); color: #d69e2e; border: 1px solid rgba(214,158,46,0.2); }
+        .log-error { background: rgba(233,30,99,0.1); color: #e91e63; border: 1px solid rgba(233,30,99,0.2); }
+        .log-success { background: rgba(56,161,105,0.1); color: #38a169; border: 1px solid rgba(56,161,105,0.2); }
+
+        .tabs { display: flex; border-bottom: 2px solid #1e2a4a; margin-bottom: 20px; }
         .tab {
             padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent;
-            margin-bottom: -2px; font-weight: 500; color: #718096; transition: all 0.2s;
+            margin-bottom: -2px; font-weight: 500; color: #8892b0; transition: all 0.2s;
         }
-        .tab:hover { color: #2d3748; }
-        .tab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
+        .tab:hover { color: #e0e0e0; }
+        .tab.active { color: #00e5ff; border-bottom-color: #00e5ff; text-shadow: 0 0 8px rgba(0,229,255,0.3); }
+
+        .form-control { background: #111827; border: 1px solid #1e2a4a; color: #e0e0e0; border-radius: 6px; padding: 6px 10px; }
+        .form-control:focus { border-color: #00e5ff; outline: none; box-shadow: 0 0 8px rgba(0,229,255,0.2); }
+        .text-secondary { color: #8892b0; }
+        .text-danger { color: #e91e63; }
+
+        .chart-container {
+            background: linear-gradient(145deg, #111827, #1a1e3a);
+            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+        }
+        .chart-container h3 { color: #e0e0e0; margin: 0 0 16px; font-size: 1rem; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .charts-grid canvas { max-height: 300px; }
+
+        .quick-actions {
+            background: linear-gradient(145deg, #111827, #1a1e3a);
+            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+        }
+        .quick-actions h3 { color: #e0e0e0; margin: 0 0 16px; font-size: 1rem; }
+        .quick-actions-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+        .quick-action-btn {
+            padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex;
+            align-items: center; gap: 8px; border: 1px solid;
+        }
+        .quick-action-btn.errors { background: rgba(233,30,99,0.1); border-color: rgba(233,30,99,0.3); color: #e91e63; }
+        .quick-action-btn.errors:hover { background: rgba(233,30,99,0.2); box-shadow: 0 0 12px rgba(233,30,99,0.3); }
+        .quick-action-btn.users { background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.3); color: #00e5ff; }
+        .quick-action-btn.users:hover { background: rgba(0,229,255,0.2); box-shadow: 0 0 12px rgba(0,229,255,0.3); }
+
+        .health-card {
+            background: linear-gradient(145deg, #111827, #1a1e3a);
+            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+        }
+        .health-card h3 { color: #e0e0e0; margin: 0 0 12px; font-size: 1rem; }
+        .health-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #1e2a4a; }
+        .health-row:last-child { border-bottom: none; }
+        .health-label { color: #8892b0; min-width: 120px; font-size: 0.9rem; }
+        .health-value { font-weight: 600; }
+        .health-connected { color: #00e5ff; }
+        .health-disconnected { color: #e91e63; }
     </style>
 </head>
 <body>
@@ -90,6 +169,26 @@
                     </div>
                 </div>
 
+                <div class="health-card">
+                    <h3>Database Connection Status</h3>
+                    <div class="health-row">
+                        <span class="health-label">Connection</span>
+                        <span class="health-value" id="dbConnectionStatus">Checking...</span>
+                    </div>
+                    <div class="health-row">
+                        <span class="health-label">Database</span>
+                        <span class="health-value" id="dbName">--</span>
+                    </div>
+                    <div class="health-row">
+                        <span class="health-label">Host</span>
+                        <span class="health-value" id="dbHost">--</span>
+                    </div>
+                    <div class="health-row">
+                        <span class="health-label">Uptime</span>
+                        <span class="health-value" id="dbUptime">--</span>
+                    </div>
+                </div>
+
                 <div class="stats-grid">
                     <div class="metric-card">
                         <h4>Students</h4>
@@ -106,6 +205,25 @@
                     <div class="metric-card">
                         <h4>Enrollments</h4>
                         <div class="value" id="metricEnrolled">0</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>System Activity (Last 24h)</h3>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Users by Role</h3>
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions-grid">
+                        <a href="/superadmin/errors.html" class="quick-action-btn errors">&#9888; Error Logs</a>
+                        <a href="/superadmin/users.html" class="quick-action-btn users">&#9775; User Management</a>
                     </div>
                 </div>
 
@@ -166,6 +284,13 @@
     <script>
         initDashboard('system-monitor');
 
+        let activityChart = null;
+        let usersChart = null;
+
+        const neonPink = '#e91e63';
+        const neonCyan = '#00e5ff';
+        const neonPurple = '#7c4dff';
+
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('[id^="tab-"]').forEach(c => c.classList.add('hidden'));
@@ -183,9 +308,127 @@
                 document.getElementById('metricTeachers').textContent = health.stats.total_teachers;
                 document.getElementById('metricSections').textContent = health.stats.total_sections;
                 document.getElementById('metricEnrolled').textContent = health.stats.total_enrolled;
+
+                const dbStatusEl = document.getElementById('dbConnectionStatus');
+                if (health.database === 'connected' || health.database === 'ok') {
+                    dbStatusEl.textContent = 'Connected';
+                    dbStatusEl.className = 'health-value health-connected';
+                } else {
+                    dbStatusEl.textContent = health.database;
+                    dbStatusEl.className = 'health-value health-disconnected';
+                }
+                document.getElementById('dbName').textContent = health.db_name || '--';
+                document.getElementById('dbHost').textContent = health.db_host || '--';
+                document.getElementById('dbUptime').textContent = health.uptime || '--';
             } catch (err) {
                 console.error('Health check failed:', err);
                 document.getElementById('dbStatus').textContent = 'Error';
+                document.getElementById('dbConnectionStatus').textContent = 'Disconnected';
+                document.getElementById('dbConnectionStatus').className = 'health-value health-disconnected';
+            }
+        }
+
+        async function loadActivityChart() {
+            try {
+                const metrics = await api.get('/system/metrics?hours=24');
+                const labels = metrics.map(m => {
+                    const d = new Date(m.recorded_at);
+                    return d.getHours().toString().padStart(2, '0') + ':00';
+                });
+                const data = metrics.map(m => m.metric_value);
+
+                const ctx = document.getElementById('activityChart').getContext('2d');
+                if (activityChart) activityChart.destroy();
+                activityChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'System Activity',
+                            data: data,
+                            borderColor: neonCyan,
+                            backgroundColor: 'rgba(0,229,255,0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: neonCyan,
+                            pointBorderColor: neonCyan,
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#8892b0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } },
+                            y: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error('Activity chart failed:', err);
+            }
+        }
+
+        async function loadUsersChart() {
+            try {
+                const overview = await api.get('/system/stats/overview');
+                document.getElementById('unresolvedErrors').textContent = overview.unresolved_errors;
+
+                const roles = overview.users_by_role || {};
+                const roleLabels = {
+                    super_admin: 'Super Admin', admin: 'Admin', principal: 'Principal',
+                    teacher: 'Teacher', student: 'Student', parent: 'Parent', registrar: 'Registrar'
+                };
+                const barColors = [neonPink, neonCyan, neonPurple, '#38a169', '#d69e2e', '#4299e1', '#dd6b20'];
+                const labels = Object.keys(roles).map(r => roleLabels[r] || r);
+                const data = Object.values(roles);
+
+                const ctx = document.getElementById('usersChart').getContext('2d');
+                if (usersChart) usersChart.destroy();
+                usersChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Users',
+                            data: data,
+                            backgroundColor: barColors.map(c => c + '99'),
+                            borderColor: barColors,
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#8892b0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } },
+                            y: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } }
+                        }
+                    }
+                });
+
+                const container = document.getElementById('usersContainer');
+                const total = data.reduce((a, b) => a + b, 0);
+                container.innerHTML = Object.entries(roles).map(([role, count], i) => `
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                        <div style="width:120px;font-size:0.9rem;font-weight:500;color:#e0e0e0;">${roleLabels[role] || role}</div>
+                        <div style="flex:1;background:#1e2a4a;border-radius:4px;height:24px;overflow:hidden;">
+                            <div style="height:100%;width:${(count/total*100)}%;background:${barColors[i % barColors.length]};border-radius:4px;transition:width 0.3s;"></div>
+                        </div>
+                        <div style="width:60px;text-align:right;font-weight:600;color:#e0e0e0;">${count}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('usersContainer').innerHTML = '<p class="text-danger">Error loading stats</p>';
             }
         }
 
@@ -202,9 +445,9 @@
                 container.innerHTML = logs.map(l => `
                     <div class="log-entry">
                         <span class="log-level log-${l.level}">${l.level}</span>
-                        <span style="color:#718096;font-size:0.8rem;min-width:140px;">${formatDateTime(l.created_at)}</span>
-                        <span style="flex:1;">${l.message}</span>
-                        <span style="color:#a0aec0;font-size:0.8rem;">${l.category}</span>
+                        <span style="color:#8892b0;font-size:0.8rem;min-width:140px;">${formatDateTime(l.created_at)}</span>
+                        <span style="flex:1;color:#e0e0e0;">${l.message}</span>
+                        <span style="color:#8892b0;font-size:0.8rem;">${l.category}</span>
                     </div>
                 `).join('');
             } catch (err) {
@@ -223,12 +466,12 @@
                 container.innerHTML = errors.map(e => `
                     <div class="log-entry">
                         <span class="log-level log-error">ERROR</span>
-                        <span style="color:#718096;font-size:0.8rem;min-width:140px;">${formatDateTime(e.created_at)}</span>
+                        <span style="color:#8892b0;font-size:0.8rem;min-width:140px;">${formatDateTime(e.created_at)}</span>
                         <span style="flex:1;">
-                            <strong>${e.error_type}</strong><br>
-                            <span style="color:#718096;">${e.error_message}</span>
+                            <strong style="color:#e0e0e0;">${e.error_type}</strong><br>
+                            <span style="color:#8892b0;">${e.error_message}</span>
                         </span>
-                        <span style="color:${e.resolved ? '#38a169' : '#d69e2e'};font-size:0.8rem;">
+                        <span style="color:${e.resolved ? '#00e5ff' : '#e91e63'};font-size:0.8rem;">
                             ${e.resolved ? 'Resolved' : 'Unresolved'}
                         </span>
                     </div>
@@ -248,44 +491,13 @@
                 }
                 container.innerHTML = metrics.map(m => `
                     <div class="log-entry">
-                        <span style="flex:1;"><strong>${m.metric_name}</strong></span>
-                        <span style="font-weight:600;">${m.metric_value} ${m.metric_unit || ''}</span>
-                        <span style="color:#718096;font-size:0.8rem;">${formatDateTime(m.recorded_at)}</span>
+                        <span style="flex:1;color:#e0e0e0;"><strong>${m.metric_name}</strong></span>
+                        <span style="font-weight:600;color:#00e5ff;">${m.metric_value} ${m.metric_unit || ''}</span>
+                        <span style="color:#8892b0;font-size:0.8rem;">${formatDateTime(m.recorded_at)}</span>
                     </div>
                 `).join('');
             } catch (err) {
                 document.getElementById('metricsContainer').innerHTML = '<p class="text-danger">Error loading metrics</p>';
-            }
-        }
-
-        async function loadUserDistribution() {
-            try {
-                const overview = await api.get('/system/stats/overview');
-                const container = document.getElementById('usersContainer');
-                document.getElementById('unresolvedErrors').textContent = overview.unresolved_errors;
-
-                const roles = overview.users_by_role || {};
-                const roleLabels = {
-                    super_admin: 'Super Admin', admin: 'Admin', principal: 'Principal',
-                    teacher: 'Teacher', student: 'Student', parent: 'Parent', registrar: 'Registrar'
-                };
-                const roleColors = {
-                    super_admin: '#e53e3e', admin: '#3182ce', principal: '#38a169',
-                    teacher: '#d69e2e', student: '#4299e1', parent: '#805ad5', registrar: '#dd6b20'
-                };
-
-                const total = Object.values(roles).reduce((a, b) => a + b, 0);
-                container.innerHTML = Object.entries(roles).map(([role, count]) => `
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                        <div style="width:120px;font-size:0.9rem;font-weight:500;">${roleLabels[role] || role}</div>
-                        <div style="flex:1;background:#e2e8f0;border-radius:4px;height:24px;overflow:hidden;">
-                            <div style="height:100%;width:${(count/total*100)}%;background:${roleColors[role] || '#718096'};border-radius:4px;transition:width 0.3s;"></div>
-                        </div>
-                        <div style="width:60px;text-align:right;font-weight:600;">${count}</div>
-                    </div>
-                `).join('');
-            } catch (err) {
-                document.getElementById('usersContainer').innerHTML = '<p class="text-danger">Error loading stats</p>';
             }
         }
 
@@ -294,7 +506,8 @@
             loadLogs();
             loadErrors();
             loadMetrics();
-            loadUserDistribution();
+            loadUsersChart();
+            loadActivityChart();
         }
 
         refreshAll();
