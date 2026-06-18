@@ -7,17 +7,17 @@
     <link rel="stylesheet" href="/css/main.css">
     <style>
         .log-entry {
-            padding: 15px; border-bottom: 1px solid #e2e8f0;
+            padding: 15px; border-bottom: 1px solid #1e2a4a;
         }
-        .log-entry:hover { background: #f7fafc; }
+        .log-entry:hover { background: rgba(0,229,255,0.03); }
         .error-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
-        .error-type { font-weight: 600; color: #e53e3e; font-size: 0.95rem; }
-        .error-meta { display: flex; gap: 15px; color: #718096; font-size: 0.8rem; margin-top: 5px; }
-        .error-message { color: #4a5568; font-size: 0.9rem; margin: 8px 0; }
-        .error-trace { background: #f7fafc; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #4a5568; max-height: 150px; overflow-y: auto; white-space: pre-wrap; display: none; }
+        .error-type { font-weight: 600; color: #e91e63; font-size: 0.95rem; }
+        .error-meta { display: flex; gap: 15px; color: #5a6a8a; font-size: 0.8rem; margin-top: 5px; }
+        .error-message { color: #8892b0; font-size: 0.9rem; margin: 8px 0; }
+        .error-trace { background: rgba(30,42,74,0.5); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #8892b0; max-height: 150px; overflow-y: auto; white-space: pre-wrap; display: none; border: 1px solid #1e2a4a; }
         .error-trace.show { display: block; }
-        .resolved-badge { background: #f0fff4; color: #276749; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; }
-        .unresolved-badge { background: #fff5f5; color: #9b2c2c; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; }
+        .resolved-badge { background: rgba(0,230,118,0.15); color: #00e676; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid rgba(0,230,118,0.3); }
+        .unresolved-badge { background: rgba(233,30,99,0.15); color: #e91e63; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid rgba(233,30,99,0.3); }
     </style>
 </head>
 <body>
@@ -37,21 +37,21 @@
             <div class="content">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
                         <div class="stat-info">
                             <h4 id="totalErrors">0</h4>
                             <p>Total Errors</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
                         <div class="stat-info">
                             <h4 id="unresolvedCount">0</h4>
                             <p>Unresolved</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
                         <div class="stat-info">
                             <h4 id="resolvedCount">0</h4>
                             <p>Resolved</p>
@@ -79,7 +79,7 @@
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
     <script>
-        initDashboard('system-monitor');
+        initDashboard('system-errors');
 
         async function loadErrors() {
             try {
@@ -98,7 +98,7 @@
 
                 const container = document.getElementById('errorsContainer');
                 if (!errors || errors.length === 0) {
-                    container.innerHTML = '<p class="text-secondary">No errors found</p>';
+                    container.innerHTML = '<p style="color:#5a6a8a;">No errors found</p>';
                     return;
                 }
 
@@ -129,7 +129,7 @@
                     </div>
                 `).join('');
             } catch (err) {
-                document.getElementById('errorsContainer').innerHTML = '<p class="text-danger">Error loading logs</p>';
+                document.getElementById('errorsContainer').innerHTML = '<p style="color:#e91e63;">Error loading logs</p>';
             }
         }
 
