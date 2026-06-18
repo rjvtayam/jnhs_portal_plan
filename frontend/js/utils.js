@@ -31,17 +31,19 @@ function showNotification(message, type = 'success') {
 
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
     notification.innerHTML = `
+        <i class="fas ${icon}"></i>
         <span>${message}</span>
         <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:1.2rem">&times;</button>
     `;
     notification.style.cssText = `
         position: fixed; top: 20px; right: 20px; z-index: 9999;
-        padding: 15px 20px; border-radius: 6px; display: flex; align-items: center; gap: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease;
-        background: ${type === 'success' ? '#f0fff4' : type === 'error' ? '#fff5f5' : '#ebf8ff'};
-        color: ${type === 'success' ? '#276749' : type === 'error' ? '#9b2c2c' : '#2b6cb0'};
-        border: 1px solid ${type === 'success' ? '#c6f6d5' : type === 'error' ? '#fed7d7' : '#bee3f8'};
+        padding: 14px 20px; border-radius: 12px; display: flex; align-items: center; gap: 10px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: slideIn 0.3s ease;
+        background: ${type === 'success' ? 'rgba(0, 230, 118, 0.15)' : type === 'error' ? 'rgba(255, 82, 82, 0.15)' : 'rgba(0, 229, 255, 0.15)'};
+        color: ${type === 'success' ? '#00e676' : type === 'error' ? '#ff5252' : '#00e5ff'};
+        border: 1px solid ${type === 'success' ? 'rgba(0, 230, 118, 0.3)' : type === 'error' ? 'rgba(255, 82, 82, 0.3)' : 'rgba(0, 229, 255, 0.3)'};
     `;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 5000);
@@ -64,13 +66,13 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">System Monitoring</div>
                 <a href="/pages/superadmin/dashboard.html" class="nav-item ${activePage === 'system-monitor' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> System Dashboard
+                    <span class="icon"><i class="fas fa-heartbeat"></i></span> System Dashboard
                 </a>
                 <a href="/pages/superadmin/errors.html" class="nav-item ${activePage === 'system-errors' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Error Logs
+                    <span class="icon"><i class="fas fa-bug"></i></span> Error Logs
                 </a>
                 <a href="/pages/superadmin/users.html" class="nav-item ${activePage === 'system-users' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> User Management
+                    <span class="icon"><i class="fas fa-users-cog"></i></span> User Management
                 </a>
             </div>
         `,
@@ -78,25 +80,25 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">Overview</div>
                 <a href="/pages/principal/dashboard.html" class="nav-item ${activePage === 'principal-dashboard' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Dashboard
+                    <span class="icon"><i class="fas fa-chart-pie"></i></span> Dashboard
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">View Records</div>
                 <a href="/pages/principal/teachers.html" class="nav-item ${activePage === 'principal-teachers' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Teachers
+                    <span class="icon"><i class="fas fa-chalkboard-teacher"></i></span> Teachers
                 </a>
                 <a href="/pages/principal/students.html" class="nav-item ${activePage === 'principal-students' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Students
+                    <span class="icon"><i class="fas fa-user-graduate"></i></span> Students
                 </a>
                 <a href="/pages/principal/sections.html" class="nav-item ${activePage === 'principal-sections' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Sections
+                    <span class="icon"><i class="fas fa-layer-group"></i></span> Sections
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Communication</div>
                 <a href="/pages/principal/announcements.html" class="nav-item ${activePage === 'principal-announcements' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Announcements
+                    <span class="icon"><i class="fas fa-bullhorn"></i></span> Announcements
                 </a>
             </div>
         `,
@@ -104,31 +106,31 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="/pages/admin/dashboard.html" class="nav-item ${activePage === 'dashboard' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Dashboard
+                    <span class="icon"><i class="fas fa-th-large"></i></span> Dashboard
                 </a>
                 <a href="/pages/admin/students.html" class="nav-item ${activePage === 'students' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Students
+                    <span class="icon"><i class="fas fa-user-graduate"></i></span> Students
                 </a>
                 <a href="/pages/admin/teachers.html" class="nav-item ${activePage === 'teachers' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Teachers
+                    <span class="icon"><i class="fas fa-chalkboard-teacher"></i></span> Teachers
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Academic</div>
                 <a href="/pages/admin/enrollment.html" class="nav-item ${activePage === 'enrollment' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Enrollment
+                    <span class="icon"><i class="fas fa-user-plus"></i></span> Enrollment
                 </a>
                 <a href="/pages/admin/grades.html" class="nav-item ${activePage === 'grades' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Grades
+                    <span class="icon"><i class="fas fa-book-open"></i></span> Grades
                 </a>
                 <a href="/pages/admin/reports.html" class="nav-item ${activePage === 'reports' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Reports
+                    <span class="icon"><i class="fas fa-file-pdf"></i></span> Reports
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Communication</div>
                 <a href="/pages/admin/announcements.html" class="nav-item ${activePage === 'announcements' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Announcements
+                    <span class="icon"><i class="fas fa-bullhorn"></i></span> Announcements
                 </a>
             </div>
         `,
@@ -136,31 +138,31 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="/pages/registrar/dashboard.html" class="nav-item ${activePage === 'registrar-dashboard' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Dashboard
+                    <span class="icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard
                 </a>
                 <a href="/pages/registrar/enrollment.html" class="nav-item ${activePage === 'registrar-enrollment' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Enrollment
+                    <span class="icon"><i class="fas fa-clipboard-list"></i></span> Enrollment
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Records</div>
                 <a href="/pages/registrar/students.html" class="nav-item ${activePage === 'registrar-students' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Student Records
+                    <span class="icon"><i class="fas fa-address-book"></i></span> Student Records
                 </a>
                 <a href="/pages/registrar/sections.html" class="nav-item ${activePage === 'registrar-sections' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Sections
+                    <span class="icon"><i class="fas fa-object-group"></i></span> Sections
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Reports</div>
                 <a href="/pages/registrar/reports.html" class="nav-item ${activePage === 'registrar-reports' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> SF9 / SF10 Reports
+                    <span class="icon"><i class="fas fa-file-alt"></i></span> SF9 / SF10 Reports
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Accounts</div>
                 <a href="/pages/registrar/account-creation.html" class="nav-item ${activePage === 'registrar-accounts' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Create Accounts
+                    <span class="icon"><i class="fas fa-user-plus"></i></span> Create Accounts
                 </a>
             </div>
         `,
@@ -168,19 +170,19 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="/pages/teacher/dashboard.html" class="nav-item ${activePage === 'dashboard' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Dashboard
+                    <span class="icon"><i class="fas fa-home"></i></span> Dashboard
                 </a>
                 <a href="/pages/teacher/my-sections.html" class="nav-item ${activePage === 'sections' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> My Sections
+                    <span class="icon"><i class="fas fa-school"></i></span> My Sections
                 </a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Academic</div>
                 <a href="/pages/teacher/grade-entry.html" class="nav-item ${activePage === 'grade-entry' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Grade Entry
+                    <span class="icon"><i class="fas fa-edit"></i></span> Grade Entry
                 </a>
                 <a href="/pages/teacher/attendance.html" class="nav-item ${activePage === 'attendance' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Attendance
+                    <span class="icon"><i class="fas fa-check-double"></i></span> Attendance
                 </a>
             </div>
         `,
@@ -188,19 +190,19 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="/pages/student/dashboard.html" class="nav-item ${activePage === 'dashboard' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Dashboard
+                    <span class="icon"><i class="fas fa-home"></i></span> Dashboard
                 </a>
                 <a href="/pages/student/grades.html" class="nav-item ${activePage === 'grades' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> My Grades
+                    <span class="icon"><i class="fas fa-star"></i></span> My Grades
                 </a>
                 <a href="/pages/student/attendance.html" class="nav-item ${activePage === 'attendance' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> My Attendance
+                    <span class="icon"><i class="fas fa-calendar-check"></i></span> My Attendance
                 </a>
                 <a href="/pages/student/schedule.html" class="nav-item ${activePage === 'schedule' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Schedule
+                    <span class="icon"><i class="fas fa-clock"></i></span> Schedule
                 </a>
                 <a href="/pages/student/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Profile
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
                 </a>
             </div>
         `,
@@ -208,13 +210,13 @@ function renderSidebar(activePage) {
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="/pages/parent/dashboard.html" class="nav-item ${activePage === 'dashboard' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Dashboard
+                    <span class="icon"><i class="fas fa-home"></i></span> Dashboard
                 </a>
                 <a href="/pages/parent/child-progress.html" class="nav-item ${activePage === 'progress' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Child Progress
+                    <span class="icon"><i class="fas fa-chart-line"></i></span> Child Progress
                 </a>
                 <a href="/pages/parent/announcements.html" class="nav-item ${activePage === 'announcements' ? 'active' : ''}">
-                    <span class="icon">&#9632;</span> Announcements
+                    <span class="icon"><i class="fas fa-bell"></i></span> Announcements
                 </a>
             </div>
         `,
@@ -230,7 +232,7 @@ function renderSidebar(activePage) {
         </nav>
         <div class="sidebar-footer">
             <div class="nav-item" onclick="Auth.logout()">
-                <span class="icon">&#9632;</span> Logout
+                <span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout
             </div>
         </div>
     `;
@@ -250,6 +252,6 @@ function initDashboard(activePage) {
 
     const userInfo = document.querySelector('.user-info');
     if (userInfo) {
-        userInfo.textContent = `${user.username} (${capitalize(user.role)})`;
+        userInfo.innerHTML = `<i class="fas fa-user-circle" style="margin-right:6px;"></i>${user.username} (${capitalize(user.role)})`;
     }
 }
