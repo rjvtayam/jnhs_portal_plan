@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About JNHS - Jomalig National High School</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #e0e0e0; }
+        .info-nav {
+            background: rgba(10,10,26,0.95); backdrop-filter: blur(20px);
+            padding: 14px 40px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(0,229,255,0.1); position: sticky; top: 0; z-index: 100;
+        }
+        .info-nav .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .info-nav .logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #e91e63, #7c4dff); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: white; }
+        .info-nav .brand-text { font-size: 1rem; font-weight: 700; color: #fff; }
+        .info-nav .brand-text span { color: #00e5ff; }
+        .info-nav a.back { color: #00e5ff; text-decoration: none; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .info-nav a.back:hover { text-decoration: underline; }
+        .info-hero {
+            padding: 80px 40px 60px; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(233,30,99,0.15) 0%, transparent 50%);
+        }
+        .info-hero .icon-circle {
+            width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 24px;
+            background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(124,77,255,0.15));
+            border: 2px solid rgba(233,30,99,0.3);
+            display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #e91e63;
+        }
+        .info-hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 12px; color: #fff; }
+        .info-hero h1 span { color: #00e5ff; }
+        .info-hero p { color: #5a6a8a; font-size: 1rem; max-width: 600px; margin: 0 auto; }
+        .info-content { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+        .info-section { margin-bottom: 50px; }
+        .info-section h2 {
+            font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .info-section h2 i { color: #00e5ff; font-size: 1.2rem; }
+        .info-section p { color: #8892b0; line-height: 1.8; margin-bottom: 14px; font-size: 0.95rem; }
+        .info-card {
+            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
+            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px;
+            padding: 24px; margin-bottom: 16px;
+        }
+        .info-card h3 { color: #fff; font-size: 1.1rem; margin-bottom: 10px; }
+        .info-card p { color: #8892b0; line-height: 1.7; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
+        .stat-box {
+            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
+            border: 1px solid rgba(0,229,255,0.15); border-radius: 12px;
+            padding: 20px; text-align: center;
+        }
+        .stat-box i { font-size: 1.5rem; margin-bottom: 10px; display: block; }
+        .stat-box .value { font-size: 1.8rem; font-weight: 800; color: #fff; }
+        .stat-box .label { font-size: 0.8rem; color: #5a6a8a; margin-top: 4px; }
+        .stat-box.pink i, .stat-box.pink .value { color: #e91e63; }
+        .stat-box.cyan i, .stat-box.cyan .value { color: #00e5ff; }
+        .stat-box.purple i, .stat-box.purple .value { color: #7c4dff; }
+        .stat-box.green i, .stat-box.green .value { color: #00e676; }
+        .mission-vision { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .mv-card {
+            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
+            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px; padding: 28px;
+        }
+        .mv-card h3 { color: #fff; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+        .mv-card h3 i { color: #e91e63; }
+        .mv-card p { color: #8892b0; line-height: 1.7; }
+        footer {
+            background: rgba(13,13,43,0.98); border-top: 1px solid rgba(124,77,255,0.15);
+            padding: 24px 40px; text-align: center; color: #5a6a8a; font-size: 0.85rem;
+        }
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .mission-vision { grid-template-columns: 1fr; }
+            .info-content { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="info-nav">
+        <a href="/" class="brand">
+            <div class="logo">J</div>
+            <div class="brand-text">JNHS <span>Portal</span></div>
+        </a>
+        <a href="/" class="back"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </nav>
+
+    <div class="info-hero">
+        <div class="icon-circle"><i class="fas fa-school"></i></div>
+        <h1>About <span>JNHS</span></h1>
+        <p>Jomalig National High School - Serving the youth of Jomalig, Quezon with quality education since its founding.</p>
+    </div>
+
+    <div class="info-content">
+        <div class="stats-row">
+            <div class="stat-box pink">
+                <i class="fas fa-user-graduate"></i>
+                <div class="value">500+</div>
+                <div class="label">Students</div>
+            </div>
+            <div class="stat-box cyan">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <div class="value">30+</div>
+                <div class="label">Faculty</div>
+            </div>
+            <div class="stat-box purple">
+                <i class="fas fa-layer-group"></i>
+                <div class="value">24</div>
+                <div class="label">Sections</div>
+            </div>
+            <div class="stat-box green">
+                <i class="fas fa-graduation-cap"></i>
+                <div class="value">12</div>
+                <div class="label">Grade Levels</div>
+            </div>
+        </div>
+
+        <div class="mission-vision">
+            <div class="mv-card">
+                <h3><i class="fas fa-bullseye"></i> Our Mission</h3>
+                <p>To develop globally competitive students equipped with 21st century skills, good moral values, and a strong sense of community service through quality DepEd-standardized education.</p>
+            </div>
+            <div class="mv-card">
+                <h3><i class="fas fa-eye"></i> Our Vision</h3>
+                <p>A leading public secondary school in Quezon Province producing academically excellent, morally upright, and socially responsible learners committed to national development.</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-history"></i> History</h2>
+            <p>Jomalig National High School was established to serve the educational needs of the youth in the island municipality of Jomalig, Quezon. Located in the heart of the community, the school has been a pillar of education, providing free secondary education to students from Grades 7 to 12 under the DepEd K-12 program.</p>
+            <p>Over the years, JNHS has grown to become one of the recognized public secondary schools in the Division of Quezon, consistently producing graduates who excel in academics, sports, and community service.</p>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-info-circle"></i> School Information</h2>
+            <div class="info-card">
+                <h3>General Information</h3>
+                <p><strong>School Name:</strong> Jomalig National High School</p>
+                <p><strong>School ID:</strong> 301366</p>
+                <p><strong>Division:</strong> Division of Quezon</p>
+                <p><strong>Region:</strong> Region IV-A (CALABARZON)</p>
+                <p><strong>Province:</strong> Quezon</p>
+                <p><strong>Municipality:</strong> Jomalig</p>
+            </div>
+            <div class="info-card">
+                <h3>Academic Programs</h3>
+                <p><strong>Junior High School (JHS):</strong> Grades 7 - 10 (Core Curriculum)</p>
+                <p><strong>Senior High School (SHS):</strong> Grades 11 - 12</p>
+                <p><strong>Tracks Offered:</strong> Academic Strand (STEM, ABM, HUMSS, GAS)</p>
+                <p><strong>School Year:</strong> 2025-2026</p>
+                <p><strong>Grading System:</strong> DepEd K-12 Grading with Transmutation</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-trophy"></i> Achievements</h2>
+            <p>JNHS has consistently participated in Division and Regional academic competitions, earning recognition in science, mathematics, and English quiz bees. The school also actively participates in sports events and cultural activities within the municipality and province.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Jomalig National High School. Jomalig, Quezon. School ID: 301366</p>
+    </footer>
+</body>
+</html>

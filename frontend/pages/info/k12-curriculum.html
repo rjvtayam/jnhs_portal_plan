@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-12 Curriculum - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #e0e0e0; }
+        .info-nav {
+            background: rgba(10,10,26,0.95); backdrop-filter: blur(20px);
+            padding: 14px 40px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(0,229,255,0.1); position: sticky; top: 0; z-index: 100;
+        }
+        .info-nav .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .info-nav .logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #e91e63, #7c4dff); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: white; }
+        .info-nav .brand-text { font-size: 1rem; font-weight: 700; color: #fff; }
+        .info-nav .brand-text span { color: #00e5ff; }
+        .info-nav a.back { color: #00e5ff; text-decoration: none; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .info-nav a.back:hover { text-decoration: underline; }
+        .info-hero {
+            padding: 80px 40px 60px; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(124,77,255,0.15) 0%, transparent 50%);
+        }
+        .info-hero .icon-circle {
+            width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 24px;
+            background: linear-gradient(135deg, rgba(124,77,255,0.15), rgba(233,30,99,0.15));
+            border: 2px solid rgba(124,77,255,0.3);
+            display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #7c4dff;
+        }
+        .info-hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 12px; color: #fff; }
+        .info-hero h1 span { color: #7c4dff; }
+        .info-hero p { color: #5a6a8a; font-size: 1rem; max-width: 600px; margin: 0 auto; }
+        .info-content { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+        .info-section { margin-bottom: 50px; }
+        .info-section h2 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+        .info-section h2 i { color: #7c4dff; }
+        .info-section p { color: #8892b0; line-height: 1.8; margin-bottom: 14px; font-size: 0.95rem; }
+        .info-card {
+            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
+            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px;
+            padding: 24px; margin-bottom: 16px;
+        }
+        .info-card h3 { color: #fff; font-size: 1.05rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .info-card h3 i { color: #e91e63; }
+        .info-card p { color: #8892b0; line-height: 1.7; }
+        .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .track-card {
+            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
+            border: 1px solid rgba(124,77,255,0.15); border-radius: 12px;
+            padding: 20px; transition: all 0.3s;
+        }
+        .track-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-2px); }
+        .track-card .track-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 12px; }
+        .track-card .track-icon.stem { background: rgba(0,229,255,0.15); color: #00e5ff; }
+        .track-card .track-icon.abm { background: rgba(233,30,99,0.15); color: #e91e63; }
+        .track-card .track-icon.humss { background: rgba(124,77,255,0.15); color: #7c4dff; }
+        .track-card .track-icon.gas { background: rgba(0,230,118,0.15); color: #00e676; }
+        .track-card h4 { color: #fff; font-size: 0.95rem; margin-bottom: 6px; }
+        .track-card p { color: #5a6a8a; font-size: 0.85rem; line-height: 1.6; }
+        .grade-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grade-item {
+            background: rgba(30,42,74,0.3); border: 1px solid rgba(124,77,255,0.1); border-radius: 10px;
+            padding: 14px; display: flex; align-items: center; gap: 12px;
+        }
+        .grade-item .grade-num { width: 36px; height: 36px; border-radius: 8px; background: rgba(124,77,255,0.15); color: #7c4dff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+        .grade-item .grade-info { font-size: 0.85rem; }
+        .grade-item .grade-info strong { color: #e0e0e0; display: block; }
+        .grade-item .grade-info span { color: #5a6a8a; font-size: 0.8rem; }
+        footer {
+            background: rgba(13,13,43,0.98); border-top: 1px solid rgba(124,77,255,0.15);
+            padding: 24px 40px; text-align: center; color: #5a6a8a; font-size: 0.85rem;
+        }
+        @media (max-width: 768px) {
+            .track-grid { grid-template-columns: 1fr; }
+            .grade-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="info-nav">
+        <a href="/" class="brand">
+            <div class="logo">J</div>
+            <div class="brand-text">JNHS <span>Portal</span></div>
+        </a>
+        <a href="/" class="back"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </nav>
+
+    <div class="info-hero">
+        <div class="icon-circle"><i class="fas fa-graduation-cap"></i></div>
+        <h1>K-12 <span>Curriculum</span></h1>
+        <p>The Philippine Basic Education Curriculum under the Enhanced Basic Education Act of 2013 (RA 10533)</p>
+    </div>
+
+    <div class="info-content">
+        <div class="info-section">
+            <h2><i class="fas fa-info-circle"></i> What is K-12?</h2>
+            <p>The K to 12 Program covers Kindergarten, 6 years of elementary education, 4 years of junior high school (Grades 7 to 10), and 2 years of senior high school (Grades 11 to 12). It was implemented to give Filipino students sufficient time to master core academic competencies, develop lifelong learning skills, and prepare for higher education, employment, or entrepreneurship.</p>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-layer-group"></i> Grade Levels</h2>
+            <div class="grade-list">
+                <div class="grade-item">
+                    <div class="grade-num">K</div>
+                    <div class="grade-info"><strong>Kindergarten</strong><span>Foundational skills</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">1-6</div>
+                    <div class="grade-info"><strong>Elementary</strong><span>Primary education</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">7</div>
+                    <div class="grade-info"><strong>Grade 7</strong><span>Junior High School</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">8</div>
+                    <div class="grade-info"><strong>Grade 8</strong><span>Junior High School</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">9</div>
+                    <div class="grade-info"><strong>Grade 9</strong><span>Junior High School</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">10</div>
+                    <div class="grade-info"><strong>Grade 10</strong><span>Junior High School</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">11</div>
+                    <div class="grade-info"><strong>Grade 11</strong><span>Senior High School</span></div>
+                </div>
+                <div class="grade-item">
+                    <div class="grade-num">12</div>
+                    <div class="grade-info"><strong>Grade 12</strong><span>Senior High School</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-route"></i> Senior High School Tracks</h2>
+            <div class="track-grid">
+                <div class="track-card">
+                    <div class="track-icon stem"><i class="fas fa-flask"></i></div>
+                    <h4>STEM</h4>
+                    <p>Science, Technology, Engineering, and Mathematics - For students pursuing careers in engineering, medicine, IT, and sciences.</p>
+                </div>
+                <div class="track-card">
+                    <div class="track-icon abm"><i class="fas fa-chart-line"></i></div>
+                    <h4>ABM</h4>
+                    <p>Accountancy, Business, and Management - For students pursuing careers in business, accounting, and management.</p>
+                </div>
+                <div class="track-card">
+                    <div class="track-icon humss"><i class="fas fa-book-reader"></i></div>
+                    <h4>HUMSS</h4>
+                    <p>Humanities and Social Sciences - For students pursuing careers in law, education, social work, and media.</p>
+                </div>
+                <div class="track-card">
+                    <div class="track-icon gas"><i class="fas fa-puzzle-piece"></i></div>
+                    <h4>GAS</h4>
+                    <p>General Academic Strand - For students who are still exploring their career path or need a flexible academic track.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-book"></i> Core Subjects (JHS)</h2>
+            <div class="info-card">
+                <h3><i class="fas fa-list"></i> Junior High School Core Curriculum</h3>
+                <p>The Junior High School curriculum includes the following core subjects:</p>
+                <p><strong> Filipino, English, Mathematics, Science, Araling Panlipunan, MAPEH (Music, Arts, Physical Education, Health), Edukasyon sa Pagkatao, Technology and Livelihood Education (TLE)</strong></p>
+            </div>
+            <div class="info-card">
+                <h3><i class="fas fa-list"></i> Senior High School Core Subjects</h3>
+                <p>The Senior High School curriculum includes core subjects common across all tracks:</p>
+                <p><strong>Oral Communication, Reading and Writing, 21st Century Literature, Komunikasyon at Pananaliksik, Contemporary Philippine Arts, Disaster Readiness, Physical Education, Research, Practical Research, Personal Development, Understanding Culture and Society</strong></p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2><i class="fas fa-university"></i> JNHS DepEd School ID: 301366</h2>
+            <p>Jomalig National High School follows the complete K-12 curriculum as mandated by the Department of Education. All subjects, grading standards, and assessment methods comply with DepEd orders and memorandum.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Jomalig National High School. Jomalig, Quezon. School ID: 301366</p>
+    </footer>
+</body>
+</html>
