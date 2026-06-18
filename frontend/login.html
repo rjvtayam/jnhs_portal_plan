@@ -83,6 +83,41 @@
             height: 1px;
             background: var(--border-color);
         }
+        .input-icon-wrapper {
+            position: relative;
+        }
+        .input-icon-wrapper .form-control {
+            padding-left: 40px;
+        }
+        .input-icon-wrapper i.input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+            transition: color 0.3s;
+            z-index: 2;
+        }
+        .password-toggle:hover {
+            color: var(--neon-cyan);
+        }
+        .input-icon-wrapper .form-control.password-input {
+            padding-right: 42px;
+        }
     </style>
 </head>
 <body>
@@ -100,14 +135,23 @@
                 <form id="loginForm">
                     <div class="form-group">
                         <label>Username</label>
-                        <input type="text" class="form-control" id="username" required placeholder="Enter your username">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" class="form-control" id="username" required placeholder="Enter your username">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" class="form-control" id="password" required placeholder="Enter your password">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" class="form-control password-input" id="password" required placeholder="Enter your password">
+                            <button type="button" class="password-toggle" onclick="togglePassword()" title="Show/Hide Password">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
                     </div>
                     <div id="loginError" style="color: var(--danger); margin-bottom: 15px; display: none; font-size: 0.85rem;"></div>
-                    <button type="submit" class="btn btn-primary">Sign In</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In</button>
                 </form>
                 <div class="divider">JNHS Portal v1.0</div>
                 <p style="text-align:center; font-size:0.75rem; color: var(--text-muted);">DepEd K-12 Grading System</p>
@@ -117,6 +161,21 @@
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
     <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
         if (Auth.isLoggedIn()) {
             const role = Auth.getRole();
             const redirects = {
