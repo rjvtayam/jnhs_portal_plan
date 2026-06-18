@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 from typing import Optional
@@ -12,7 +14,7 @@ from app.models.enrollment import Enrollment
 from app.models.grade import Grade
 from app.models.attendance import Attendance
 from app.models.section import Section
-from app.utils.auth import get_current_user, require_role
+from app.utils.auth import get_current_user, require_role, hash_password
 
 router = APIRouter(prefix="/api/system", tags=["System Monitoring"])
 
@@ -224,3 +226,25 @@ def create_log(
     db.add(log)
     db.commit()
     return {"message": "Log created"}
+
+
+class ResetPasswordRequest(BaseModel):
+    password: str
+
+
+@router.post("/users/{user_id}/reset-password")
+def reset_user_password(
+    user_id: int,
+    body: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("super_admin")),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if len(body.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    target.password_hash = hash_password(body.password)
+    db.commit()
+    return {"message": "Password reset successfully"}

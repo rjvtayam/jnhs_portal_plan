@@ -14,11 +14,14 @@ def register(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("super_admin", "admin", "registrar")),
 ):
-    if current_user.role == "registrar" and user.role not in ("student", "parent", "teacher"):
-        raise HTTPException(status_code=403, detail="Registrar can only create student, parent, and teacher accounts")
+    if current_user.role == "super_admin" and user.role not in ("admin", "principal", "registrar"):
+        raise HTTPException(status_code=403, detail="Super Admin can only create admin, principal, and registrar accounts")
 
-    if current_user.role == "admin" and user.role in ("super_admin",):
-        raise HTTPException(status_code=403, detail="Admin cannot create super admin accounts")
+    if current_user.role == "admin" and user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Admin can only create teacher accounts")
+
+    if current_user.role == "registrar" and user.role not in ("student", "parent"):
+        raise HTTPException(status_code=403, detail="Registrar can only create student and parent accounts")
 
     existing = db.query(User).filter(User.username == user.username).first()
     if existing:

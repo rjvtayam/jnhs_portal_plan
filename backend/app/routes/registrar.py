@@ -344,7 +344,7 @@ def create_parent_account(
 def create_teacher_account(
     teacher_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(require_role("registrar", "admin")),
+    user: User = Depends(require_role("admin")),
 ):
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()
     if not teacher:

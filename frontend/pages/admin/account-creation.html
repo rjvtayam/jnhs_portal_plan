@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Teacher Accounts - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Create Teacher Accounts</h1>
+                    <p>Create login accounts for registered teachers</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Select Teacher</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Teacher</label>
+                                <select class="form-control" id="teacherSelect">
+                                    <option value="">Select Teacher</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" style="width:100%" onclick="createTeacherAccount()">Create Teacher Account</button>
+                            </div>
+                        </div>
+                        <p style="font-size:0.8rem;color:#5a6a8a;margin-top:8px;">
+                            Username = Employee ID | Password = Employee ID
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3>Teachers with Accounts</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Employee ID</th>
+                                        <th>Department</th>
+                                        <th>Account Status</th>
+                                        <th>Username</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachersTable">
+                                    <tr><td colspan="5" style="padding:20px;text-align:center;color:#5a6a8a;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('admin-accounts');
+
+        async function loadTeachers() {
+            try {
+                const teachers = await api.get('/teachers/');
+                const select = document.getElementById('teacherSelect');
+                select.innerHTML = '<option value="">Select Teacher</option>' +
+                    teachers.map(t => `<option value="${t.id}">${t.last_name}, ${t.first_name} (${t.employee_id || 'No ID'})</option>`).join('');
+
+                const tbody = document.getElementById('teachersTable');
+                if (!teachers || teachers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#5a6a8a;">No teachers found</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = teachers.map(t => `
+                    <tr>
+                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.last_name}, ${t.first_name}</td>
+                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.employee_id || '-'}</td>
+                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.department || '-'}</td>
+                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;">
+                            ${t.user_id ? '<span style="color:#00e676;">Has Account</span>' : '<span style="color:#ffc107;">No Account</span>'}
+                        </td>
+                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.user_id ? t.employee_id : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function createTeacherAccount() {
+            const teacherId = document.getElementById('teacherSelect').value;
+            if (!teacherId) {
+                showNotification('Please select a teacher', 'error');
+                return;
+            }
+            try {
+                const result = await api.post(`/registrar/accounts/create-teacher?teacher_id=${teacherId}`);
+                showNotification(`Teacher account created! Username: ${result.username}, Password: ${result.password}`);
+                loadTeachers();
+            } catch (err) {
+                showNotification(err.message || 'Error creating account', 'error');
+            }
+        }
+
+        loadTeachers();
+    </script>
+</body>
+</html>

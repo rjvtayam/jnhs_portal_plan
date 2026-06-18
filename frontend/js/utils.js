@@ -133,6 +133,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-bullhorn"></i></span> Announcements
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Accounts</div>
+                <a href="/pages/admin/account-creation.html" class="nav-item ${activePage === 'admin-accounts' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-plus"></i></span> Create Teacher Account
+                </a>
+            </div>
         `,
         registrar: `
             <div class="nav-section">
