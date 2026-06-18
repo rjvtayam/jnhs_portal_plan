@@ -176,13 +176,31 @@ def system_overview(
         db.query(User.role, func.count(User.id)).group_by(User.role).all()
     )
 
+    total_users_count = db.query(func.count(User.id)).scalar() or 0
+    active_users_count = db.query(func.count(User.id)).filter(User.is_active == True).scalar() or 0
+    all_users = db.query(User).order_by(User.id).all()
+    users_list = [
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "role": u.role,
+            "is_active": u.is_active,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in all_users
+    ]
+
     return {
+        "total_users": total_users_count,
+        "active_users": active_users_count,
         "new_users_week": new_users_week,
         "new_enrollments_week": new_enrollments_week,
         "new_grades_week": new_grades_week,
         "unresolved_errors": unresolved_errors,
         "total_errors": total_errors,
         "users_by_role": users_by_role,
+        "users": users_list,
     }
 
 

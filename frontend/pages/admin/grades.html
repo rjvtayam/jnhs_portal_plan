@@ -99,7 +99,7 @@
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
     <script>
-        initDashboard('grade-entry');
+        initDashboard('grades');
 
         const gradeData = {};
 
@@ -171,7 +171,7 @@
             const qaPct = qaP ? (qa / qaP * 100) : 0;
 
             const raw = (wwPct * 0.30) + (ptPct * 0.50) + (qaPct * 0.20);
-            const transmuted = Math.min(100, Math.round(51 + (raw / 2)));
+            const transmuted = Math.floor(50 + (raw / 2));
 
             document.querySelector(`.raw-grade[data-student="${studentId}"]`).textContent = raw.toFixed(2);
             document.querySelector(`.transmuted-grade[data-student="${studentId}"]`).textContent = transmuted;
@@ -207,7 +207,7 @@
             }));
 
             try {
-                await api.post('/grades/', { grades });
+                await api.post('/grades/bulk', grades);
                 showNotification('Grades saved successfully');
             } catch (err) {
                 showNotification(err.message || 'Error saving grades', 'error');

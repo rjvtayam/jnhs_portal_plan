@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Enrollment Management</h1>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="showModal('enrollModal')">Enroll Student</button>
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-body">
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label>Grade Level</label>
+                                <select class="form-control" id="filterGrade" onchange="loadEnrollments()">
+                                    <option value="">All Grades</option>
+                                    <option value="7">Grade 7</option>
+                                    <option value="8">Grade 8</option>
+                                    <option value="9">Grade 9</option>
+                                    <option value="10">Grade 10</option>
+                                    <option value="11">Grade 11</option>
+                                    <option value="12">Grade 12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select class="form-control" id="filterStatus" onchange="loadEnrollments()">
+                                    <option value="">All</option>
+                                    <option value="enrolled">Enrolled</option>
+                                    <option value="dropped">Dropped</option>
+                                    <option value="transferred">Transferred</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>School Year</label>
+                                <input type="text" class="form-control" id="filterSY" value="2025-2026" onchange="loadEnrollments()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Enrollment Records</h3>
+                    </div>
+                    <div class="card-body">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f7fafc;">
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Student</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">LRN</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Grade</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Section</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">SY</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Status</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Date</th>
+                                    <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="enrollmentsBody">
+                                <tr><td colspan="8" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="enrollModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Enroll Student</h3>
+                <button class="modal-close" onclick="hideModal('enrollModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="enrollForm" onsubmit="saveEnrollment(event)">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Student</label>
+                            <select class="form-control" id="enrollStudent" required>
+                                <option value="">Select Student</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Section</label>
+                            <select class="form-control" id="enrollSection" required>
+                                <option value="">Select Section</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>School Year</label>
+                            <input type="text" class="form-control" id="enrollSY" value="2025-2026" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Semester</label>
+                            <select class="form-control" id="enrollSem">
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:15px;">
+                        <button type="button" class="btn btn-outline" onclick="hideModal('enrollModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Enroll</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('enrollment');
+
+        async function loadEnrollments() {
+            const grade = document.getElementById('filterGrade').value;
+            const status = document.getElementById('filterStatus').value;
+            const sy = document.getElementById('filterSY').value;
+            try {
+                let url = '/enrollment/';
+                const params = new URLSearchParams();
+                if (sy) params.set('school_year', sy);
+                if (params.toString()) url += '?' + params.toString();
+                const enrollments = await api.get(url);
+                const tbody = document.getElementById('enrollmentsBody');
+
+                let filtered = enrollments;
+                if (grade) filtered = filtered.filter(e => e.grade_level == grade);
+                if (status) filtered = filtered.filter(e => e.status === status);
+
+                if (!filtered || filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#718096;">No enrollments found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = filtered.map(e => `
+                    <tr>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.student_name || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.lrn || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.grade_level || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.section_name || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.school_year || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><span style="padding:3px 10px;border-radius:12px;font-size:0.85rem;background:${e.status==='enrolled'?'#c6f6d5':'#fed7d7'};color:${e.status==='enrolled'?'#276749':'#9b2c2c'};">${e.status}</span></td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.date_enrolled ? formatDate(e.date_enrolled) : '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">
+                            ${e.status === 'enrolled' ? `<button class="btn btn-sm btn-outline" onclick="updateStatus(${e.id},'dropped')">Drop</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadDropdowns() {
+            try {
+                const [students, sections] = await Promise.all([
+                    api.get('/students/'),
+                    api.get('/sections/')
+                ]);
+                document.getElementById('enrollStudent').innerHTML = '<option value="">Select Student</option>' +
+                    students.map(s => `<option value="${s.id}">${s.last_name}, ${s.first_name} (${s.lrn})</option>`).join('');
+                document.getElementById('enrollSection').innerHTML = '<option value="">Select Section</option>' +
+                    sections.map(s => `<option value="${s.id}">Grade ${s.grade_level} - ${s.name}</option>`).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function saveEnrollment(e) {
+            e.preventDefault();
+            try {
+                await api.post('/enrollment/', {
+                    student_id: parseInt(document.getElementById('enrollStudent').value),
+                    section_id: parseInt(document.getElementById('enrollSection').value),
+                    school_year: document.getElementById('enrollSY').value,
+                    semester: document.getElementById('enrollSem').value,
+                    status: 'enrolled',
+                });
+                showNotification('Student enrolled successfully');
+                hideModal('enrollModal');
+                document.getElementById('enrollForm').reset();
+                loadEnrollments();
+            } catch (err) {
+                showNotification(err.message || 'Error enrolling student', 'error');
+            }
+        }
+
+        async function updateStatus(id, status) {
+            try {
+                await api.put(`/enrollment/${id}`, { status });
+                showNotification('Status updated');
+                loadEnrollments();
+            } catch (err) {
+                showNotification(err.message || 'Error updating status', 'error');
+            }
+        }
+
+        loadDropdowns();
+        loadEnrollments();
+    </script>
+</body>
+</html>

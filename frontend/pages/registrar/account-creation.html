@@ -256,15 +256,30 @@
 
         async function loadAccounts() {
             try {
-                const response = await api.get('/students/');
+                const students = await api.get('/students/');
                 const tbody = document.getElementById('accountsTable');
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Loading...</td></tr>';
+
+                if (!students || students.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">No students found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = students.map(s => `
+                    <tr>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${s.lrn}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${s.last_name}, ${s.first_name}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;"><span class="badge badge-info">Student</span></td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${s.has_account ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-warning">No Account</span>'}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${s.username || '-'}</td>
+                    </tr>
+                `).join('');
             } catch (err) {
                 console.error(err);
             }
         }
 
         loadTeachers();
+        loadAccounts();
     </script>
 </body>
 </html>

@@ -3,13 +3,23 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest
-from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user
+from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user, require_role
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
 @router.post("/register", response_model=UserResponse)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+def register(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("super_admin", "admin", "registrar")),
+):
+    if current_user.role == "registrar" and user.role not in ("student", "parent", "teacher"):
+        raise HTTPException(status_code=403, detail="Registrar can only create student, parent, and teacher accounts")
+
+    if current_user.role == "admin" and user.role in ("super_admin",):
+        raise HTTPException(status_code=403, detail="Admin cannot create super admin accounts")
+
     existing = db.query(User).filter(User.username == user.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already taken")
@@ -45,3 +55,21 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def get_me(user: User = Depends(get_current_user)):
     return UserResponse.model_validate(user)
+
+
+@router.post("/change-password")
+def change_password(
+    current_password: str,
+    new_password: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not verify_password(current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+
+    user.password_hash = hash_password(new_password)
+    db.commit()
+    return {"message": "Password changed successfully"}

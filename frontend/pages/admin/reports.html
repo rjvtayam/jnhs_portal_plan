@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>SF9 / SF10 Reports</h1>
+                    <p>Generate DepEd-compliant report cards and permanent records</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>School Form 9 (SF9)</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="margin-bottom:15px;color:#718096;font-size:0.9rem;">
+                                Learner's Progress Report Card - Contains quarterly grades, attendance, and remarks.
+                            </p>
+                            <div class="form-group">
+                                <label>Grade Level</label>
+                                <select class="form-control" id="sf9Grade" onchange="loadStudentsForReport()">
+                                    <option value="">Select Grade</option>
+                                    <option value="7">Grade 7</option>
+                                    <option value="8">Grade 8</option>
+                                    <option value="9">Grade 9</option>
+                                    <option value="10">Grade 10</option>
+                                    <option value="11">Grade 11</option>
+                                    <option value="12">Grade 12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Student</label>
+                                <select class="form-control" id="sf9Student">
+                                    <option value="">Select student first</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>School Year</label>
+                                <select class="form-control" id="sf9SY">
+                                    <option value="2025-2026">2025-2026</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" style="width:100%" onclick="downloadSF9()">Download SF9 PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>School Form 10 (SF10)</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="margin-bottom:15px;color:#718096;font-size:0.9rem;">
+                                Learner's Permanent Record - Contains complete grade history from Grades 7-12.
+                            </p>
+                            <div class="form-group">
+                                <label>Grade Level</label>
+                                <select class="form-control" id="sf10Grade" onchange="loadStudentsForSF10()">
+                                    <option value="">Select Grade</option>
+                                    <option value="7">Grade 7</option>
+                                    <option value="8">Grade 8</option>
+                                    <option value="9">Grade 9</option>
+                                    <option value="10">Grade 10</option>
+                                    <option value="11">Grade 11</option>
+                                    <option value="12">Grade 12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Student</label>
+                                <select class="form-control" id="sf10Student">
+                                    <option value="">Select student first</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" style="width:100%" onclick="downloadSF10()">Download SF10 PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('reports');
+
+        async function loadStudentsForReport() {
+            const grade = document.getElementById('sf9Grade').value;
+            if (!grade) return;
+            try {
+                const students = await api.get(`/registrar/reports/students?grade_level=${grade}`);
+                document.getElementById('sf9Student').innerHTML = '<option value="">Select Student</option>' +
+                    students.map(s => `<option value="${s.student_id}">${s.name} (${s.section})</option>`).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadStudentsForSF10() {
+            const grade = document.getElementById('sf10Grade').value;
+            if (!grade) return;
+            try {
+                const students = await api.get(`/registrar/reports/students?grade_level=${grade}`);
+                document.getElementById('sf10Student').innerHTML = '<option value="">Select Student</option>' +
+                    students.map(s => `<option value="${s.student_id}">${s.name} (${s.section})</option>`).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function downloadSF9() {
+            const studentId = document.getElementById('sf9Student').value;
+            const sy = document.getElementById('sf9SY').value;
+            if (!studentId) { showNotification('Please select a student', 'error'); return; }
+            try {
+                const token = localStorage.getItem('jnhs_token');
+                const response = await fetch(`/api/registrar/reports/sf9/${studentId}?school_year=${sy}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to generate PDF');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `SF9_${sy}.pdf`;
+                a.click();
+                showNotification('SF9 downloaded successfully');
+            } catch (err) {
+                showNotification(err.message || 'Error generating SF9', 'error');
+            }
+        }
+
+        async function downloadSF10() {
+            const studentId = document.getElementById('sf10Student').value;
+            if (!studentId) { showNotification('Please select a student', 'error'); return; }
+            try {
+                const token = localStorage.getItem('jnhs_token');
+                const response = await fetch(`/api/registrar/reports/sf10/${studentId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to generate PDF');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `SF10.pdf`;
+                a.click();
+                showNotification('SF10 downloaded successfully');
+            } catch (err) {
+                showNotification(err.message || 'Error generating SF10', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

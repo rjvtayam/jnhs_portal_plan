@@ -193,6 +193,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/student/grades.html" class="nav-item ${activePage === 'grades' ? 'active' : ''}">
                     <span class="icon">&#9632;</span> My Grades
                 </a>
+                <a href="/pages/student/attendance.html" class="nav-item ${activePage === 'attendance' ? 'active' : ''}">
+                    <span class="icon">&#9632;</span> My Attendance
+                </a>
                 <a href="/pages/student/schedule.html" class="nav-item ${activePage === 'schedule' ? 'active' : ''}">
                     <span class="icon">&#9632;</span> Schedule
                 </a>

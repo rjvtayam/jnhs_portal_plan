@@ -55,11 +55,18 @@ def student_dashboard(
             "first_name": student.first_name,
             "middle_name": student.middle_name,
             "last_name": student.last_name,
+            "extension_name": student.extension_name,
             "gender": student.gender,
+            "birth_date": student.birth_date.strftime("%Y-%m-%d") if student.birth_date else None,
+            "contact_number": student.contact_number,
+            "address": student.address,
             "guardian_name": student.guardian_name,
             "guardian_contact": student.guardian_contact,
+            "school_year": enrollment.school_year if enrollment else None,
+            "status": "enrolled" if enrollment else "not enrolled",
         },
         "section": {
+            "id": section.id,
             "name": section.name,
             "grade_level": section.grade_level,
             "track": section.track,
@@ -128,14 +135,34 @@ def student_attendance(
         Attendance.student_id == student.id
     ).order_by(Attendance.date.desc()).limit(30).all()
 
-    return [
-        {
-            "date": a.date.isoformat(),
-            "status": a.status,
-            "remarks": a.remarks,
-        }
-        for a in attendance
-    ]
+    present = db.query(Attendance).filter(
+        Attendance.student_id == student.id,
+        Attendance.status == "present"
+    ).count() or 0
+    absent = db.query(Attendance).filter(
+        Attendance.student_id == student.id,
+        Attendance.status == "absent"
+    ).count() or 0
+    late = db.query(Attendance).filter(
+        Attendance.student_id == student.id,
+        Attendance.status == "late"
+    ).count() or 0
+
+    return {
+        "records": [
+            {
+                "date": a.date.isoformat(),
+                "status": a.status,
+                "remarks": a.remarks,
+            }
+            for a in attendance
+        ],
+        "summary": {
+            "present": present,
+            "absent": absent,
+            "late": late,
+        },
+    }
 
 
 @router.get("/schedule")

@@ -81,11 +81,12 @@
 
         async function loadDashboard() {
             try {
-                const [students, teachers, sections, announcements] = await Promise.all([
+                const [students, teachers, sections, announcements, events] = await Promise.all([
                     api.get('/students/').catch(() => []),
                     api.get('/teachers/').catch(() => []),
-                    api.get('/sections').catch(() => []),
+                    api.get('/sections/').catch(() => []),
                     api.get('/announcements').catch(() => []),
+                    api.get('/events').catch(() => []),
                 ]);
 
                 document.getElementById('totalStudents').textContent = students.length || 0;
@@ -100,10 +101,10 @@
                 `).join('');
                 document.getElementById('recentAnnouncements').innerHTML = announcementsHtml || '<p class="text-secondary">No announcements</p>';
 
-                const eventsHtml = (announcements || []).slice(0, 5).map(e => `
+                const eventsHtml = (events || []).slice(0, 5).map(e => `
                     <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
                         <strong>${e.title}</strong>
-                        <p style="font-size: 0.85rem; color: #718096;">${formatDate(e.event_date)}</p>
+                        <p style="font-size: 0.85rem; color: #718096;">${formatDate(e.event_date || e.date)}</p>
                     </div>
                 `).join('');
                 document.getElementById('upcomingEvents').innerHTML = eventsHtml || '<p class="text-secondary">No upcoming events</p>';

@@ -198,7 +198,7 @@
             const qa_pct = (qa_score / qa_possible) * 100;
 
             const raw = (ww_pct * 0.30 + pt_pct * 0.50 + qa_pct * 0.20);
-            const transmuted = raw >= 98 ? 100 : Math.floor(51 + (raw / 2));
+            const transmuted = raw >= 100 ? 100 : Math.floor(50 + (raw / 2));
 
             const rawEl = row.querySelector(`[data-student="${studentId}"][data-field="raw"]`);
             const transEl = row.querySelector(`[data-student="${studentId}"][data-field="transmuted"]`);

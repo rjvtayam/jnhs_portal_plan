@@ -212,6 +212,25 @@
             }
         }
 
+        async function viewStudent(id) {
+            try {
+                const student = await api.get(`/students/${id}`);
+                alert(
+                    `Student Profile\n\n` +
+                    `Name: ${student.last_name}, ${student.first_name} ${student.middle_name || ''}\n` +
+                    `LRN: ${student.lrn}\n` +
+                    `Gender: ${student.gender || '-'}\n` +
+                    `Birth Date: ${student.birth_date || '-'}\n` +
+                    `Contact: ${student.contact_number || '-'}\n` +
+                    `Address: ${student.address || '-'}\n` +
+                    `Guardian: ${student.guardian_name || '-'}\n` +
+                    `Guardian Contact: ${student.guardian_contact || '-'}`
+                );
+            } catch (err) {
+                showNotification('Error loading student details', 'error');
+            }
+        }
+
         loadStudents();
     </script>
 </body>

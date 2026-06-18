@@ -14,12 +14,12 @@
         .profile-avatar {
             width: 100px; height: 100px; background: rgba(255,255,255,0.2);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: 700;
+            font-size: 2.5rem; font-weight: 700; flex-shrink: 0;
         }
         .profile-info h2 { margin-bottom: 5px; }
         .profile-info p { opacity: 0.8; margin-bottom: 3px; }
         .info-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
         }
         .info-card {
@@ -29,7 +29,7 @@
         .info-card h4 { color: #1e3a5f; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
         .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f7fafc; }
         .info-label { color: #718096; font-size: 0.9rem; }
-        .info-value { font-weight: 500; }
+        .info-value { font-weight: 500; text-align: right; }
     </style>
 </head>
 <body>
@@ -60,6 +60,7 @@
                         <div class="info-row"><span class="info-label">First Name</span><span class="info-value" id="firstName">-</span></div>
                         <div class="info-row"><span class="info-label">Middle Name</span><span class="info-value" id="middleName">-</span></div>
                         <div class="info-row"><span class="info-label">Last Name</span><span class="info-value" id="lastName">-</span></div>
+                        <div class="info-row"><span class="info-label">Extension</span><span class="info-value" id="extension">-</span></div>
                         <div class="info-row"><span class="info-label">Gender</span><span class="info-value" id="gender">-</span></div>
                         <div class="info-row"><span class="info-label">Date of Birth</span><span class="info-value" id="dob">-</span></div>
                         <div class="info-row"><span class="info-label">Contact</span><span class="info-value" id="contact">-</span></div>
@@ -67,6 +68,7 @@
 
                     <div class="info-card">
                         <h4>Academic Information</h4>
+                        <div class="info-row"><span class="info-label">LRN</span><span class="info-value" id="lrnValue">-</span></div>
                         <div class="info-row"><span class="info-label">Grade Level</span><span class="info-value" id="gradeLevel">-</span></div>
                         <div class="info-row"><span class="info-label">Section</span><span class="info-value" id="sectionName">-</span></div>
                         <div class="info-row"><span class="info-label">Track</span><span class="info-value" id="trackName">-</span></div>
@@ -76,15 +78,13 @@
 
                     <div class="info-card">
                         <h4>Address</h4>
-                        <div class="info-row"><span class="info-label">Street</span><span class="info-value" id="street">-</span></div>
-                        <div class="info-row"><span class="info-label">Barangay</span><span class="info-value" id="barangay">-</span></div>
-                        <div class="info-row"><span class="info-label">Municipality</span><span class="info-value" id="municipality">-</span></div>
-                        <div class="info-row"><span class="info-label">Province</span><span class="info-value" id="province">-</span></div>
+                        <div class="info-row"><span class="info-label">Address</span><span class="info-value" id="address">-</span></div>
                     </div>
 
                     <div class="info-card">
                         <h4>Guardian Information</h4>
-                        <div id="guardianInfo"><p class="text-secondary">Loading...</p></div>
+                        <div class="info-row"><span class="info-label">Guardian Name</span><span class="info-value" id="guardianName">-</span></div>
+                        <div class="info-row"><span class="info-label">Contact</span><span class="info-value" id="guardianContact">-</span></div>
                     </div>
                 </div>
             </div>
@@ -94,7 +94,7 @@
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
     <script>
-        initDashboard('dashboard');
+        initDashboard('profile');
 
         async function loadProfile() {
             try {
@@ -105,42 +105,28 @@
                 document.getElementById('avatarInitials').textContent = initials;
                 document.getElementById('profileName').textContent = `${s.last_name}, ${s.first_name} ${s.middle_name || ''}`;
                 document.getElementById('profileLRN').textContent = s.lrn;
-                document.getElementById('profileGrade').textContent = s.grade_level || '-';
+                document.getElementById('profileGrade').textContent = data.section ? data.section.grade_level : '-';
                 document.getElementById('profileSection').textContent = data.section ? data.section.name : '-';
 
                 document.getElementById('firstName').textContent = s.first_name || '-';
                 document.getElementById('middleName').textContent = s.middle_name || '-';
                 document.getElementById('lastName').textContent = s.last_name || '-';
+                document.getElementById('extension').textContent = s.extension_name || 'N/A';
                 document.getElementById('gender').textContent = s.gender || '-';
                 document.getElementById('dob').textContent = s.birth_date || '-';
                 document.getElementById('contact').textContent = s.contact_number || '-';
 
-                if (data.section) {
-                    document.getElementById('gradeLevel').textContent = data.section.grade_level || '-';
-                    document.getElementById('sectionName').textContent = data.section.name || '-';
-                    document.getElementById('trackName').textContent = data.section.track || 'N/A';
-                }
+                document.getElementById('lrnValue').textContent = s.lrn || '-';
+                document.getElementById('gradeLevel').textContent = data.section ? data.section.grade_level : '-';
+                document.getElementById('sectionName').textContent = data.section ? data.section.name : '-';
+                document.getElementById('trackName').textContent = data.section && data.section.track ? data.section.track : 'N/A';
                 document.getElementById('schoolYear').textContent = s.school_year || '-';
                 document.getElementById('status').textContent = s.status || '-';
 
-                if (s.address) {
-                    document.getElementById('street').textContent = s.address.street || '-';
-                    document.getElementById('barangay').textContent = s.address.barangay || '-';
-                    document.getElementById('municipality').textContent = s.address.municipality || '-';
-                    document.getElementById('province').textContent = s.address.province || '-';
-                }
+                document.getElementById('address').textContent = s.address || '-';
 
-                if (data.guardian) {
-                    const g = data.guardian;
-                    document.getElementById('guardianInfo').innerHTML = `
-                        <div class="info-row"><span class="info-label">Name</span><span class="info-value">${g.first_name} ${g.last_name}</span></div>
-                        <div class="info-row"><span class="info-label">Relationship</span><span class="info-value">${g.relationship}</span></div>
-                        <div class="info-row"><span class="info-label">Contact</span><span class="info-value">${g.contact_number || '-'}</span></div>
-                        <div class="info-row"><span class="info-label">Email</span><span class="info-value">${g.email || '-'}</span></div>
-                    `;
-                } else {
-                    document.getElementById('guardianInfo').innerHTML = '<p class="text-secondary">No guardian information</p>';
-                }
+                document.getElementById('guardianName').textContent = s.guardian_name || '-';
+                document.getElementById('guardianContact').textContent = s.guardian_contact || '-';
             } catch (err) {
                 console.error(err);
             }

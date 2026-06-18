@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Announcements</h1>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="showModal('addAnnouncementModal')">New Announcement</button>
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div id="announcementsContainer">
+                    <p class="text-secondary">Loading announcements...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="addAnnouncementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>New Announcement</h3>
+                <button class="modal-close" onclick="hideModal('addAnnouncementModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="announcementForm" onsubmit="saveAnnouncement(event)">
+                    <div class="form-group">
+                        <label>Title *</label>
+                        <input type="text" class="form-control" id="annTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Content *</label>
+                        <textarea class="form-control" id="annContent" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Audience</label>
+                        <select class="form-control" id="annTarget">
+                            <option value="all">All</option>
+                            <option value="teachers">Teachers</option>
+                            <option value="students">Students</option>
+                            <option value="parents">Parents</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:15px;">
+                        <button type="button" class="btn btn-outline" onclick="hideModal('addAnnouncementModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Post Announcement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('announcements');
+
+        async function loadAnnouncements() {
+            try {
+                const announcements = await api.get('/announcements');
+                const container = document.getElementById('announcementsContainer');
+
+                if (!announcements || announcements.length === 0) {
+                    container.innerHTML = '<div class="card"><div class="card-body"><p class="text-secondary">No announcements yet.</p></div></div>';
+                    return;
+                }
+
+                container.innerHTML = announcements.map(a => `
+                    <div class="card" style="margin-bottom:15px;">
+                        <div class="card-header">
+                            <h3>${a.title}</h3>
+                            <span style="color:#718096;font-size:0.85rem;">${formatDateTime(a.created_at)}</span>
+                        </div>
+                        <div class="card-body">
+                            <p>${a.content}</p>
+                            ${a.target_audience ? `<span style="padding:3px 10px;border-radius:12px;font-size:0.8rem;background:#ebf8ff;color:#2b6cb0;">${a.target_audience}</span>` : ''}
+                        </div>
+                        <div style="padding:0 20px 15px;">
+                            <button class="btn btn-sm btn-outline" onclick="deleteAnnouncement(${a.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function saveAnnouncement(e) {
+            e.preventDefault();
+            try {
+                await api.post('/announcements', {
+                    title: document.getElementById('annTitle').value,
+                    content: document.getElementById('annContent').value,
+                    target_audience: document.getElementById('annTarget').value,
+                });
+                showNotification('Announcement posted');
+                hideModal('addAnnouncementModal');
+                document.getElementById('announcementForm').reset();
+                loadAnnouncements();
+            } catch (err) {
+                showNotification(err.message || 'Error posting announcement', 'error');
+            }
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm('Delete this announcement?')) return;
+            try {
+                await api.delete(`/announcements/${id}`);
+                showNotification('Announcement deleted');
+                loadAnnouncements();
+            } catch (err) {
+                showNotification(err.message || 'Error deleting', 'error');
+            }
+        }
+
+        loadAnnouncements();
+    </script>
+</body>
+</html>

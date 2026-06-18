@@ -143,12 +143,15 @@ def list_all_subjects(
 @router.get("/sections")
 def list_all_sections(
     school_year: Optional[str] = None,
+    grade_level: Optional[str] = None,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("principal", "admin")),
 ):
     query = db.query(Section)
     if school_year:
         query = query.filter(Section.school_year == school_year)
+    if grade_level:
+        query = query.filter(Section.grade_level == grade_level)
     sections = query.all()
     result = []
     for s in sections:

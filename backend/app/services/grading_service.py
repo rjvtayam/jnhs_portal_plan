@@ -68,12 +68,16 @@ def compute_raw_grade(
 
 
 def transmute_grade(raw_score: float) -> int:
-    """DepEd transmutation table: raw score to report card grade."""
-    if raw_score >= 98:
+    """DepEd transmutation table: raw score to report card grade.
+    Based on DepEd Order No. 8, s. 2015.
+    Formula: 50 + (raw_score / 2)
+    Minimum passing: 75 (raw_score >= 50)
+    """
+    if raw_score >= 100:
         return 100
-    elif raw_score >= 0:
-        return int(51 + (raw_score / 2))
-    return 51
+    elif raw_score > 0:
+        return int(50 + (raw_score / 2))
+    return 50
 
 
 def compute_quarterly_grade(

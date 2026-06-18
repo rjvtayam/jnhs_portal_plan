@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Users - JNHS Portal</title>
+    <title>User Management - JNHS Portal</title>
     <link rel="stylesheet" href="/css/main.css">
     <style>
-        .role-card {
-            background: white; border-radius: 8px; padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid;
+        .role-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 0.8rem; font-weight: 500;
         }
-        .role-card h4 { margin-bottom: 10px; }
-        .role-card .count { font-size: 2rem; font-weight: 700; }
-        .role-list { list-style: none; padding: 0; }
-        .role-list li { padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
-        .role-list li:last-child { border-bottom: none; }
+        .role-super_admin { background: #fed7d7; color: #9b2c2c; }
+        .role-admin { background: #fefcbf; color: #975a16; }
+        .role-principal { background: #e9d8fd; color: #553c9a; }
+        .role-registrar { background: #c6f6d5; color: #276749; }
+        .role-teacher { background: #bee3f8; color: #2a4365; }
+        .role-student { background: #fefcbf; color: #744210; }
+        .role-parent { background: #fed7e2; color: #97266d; }
     </style>
 </head>
 <body>
@@ -24,117 +26,226 @@
             <div class="topbar">
                 <div class="topbar-title">
                     <h1>User Management</h1>
-                    <p>System user accounts and roles</p>
                 </div>
                 <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="showModal('createUserModal')">Create Account</button>
                     <span class="user-info"></span>
                 </div>
             </div>
             <div class="content">
                 <div class="stats-grid">
-                    <div class="role-card" style="border-color:#e53e3e;">
-                        <h4>Super Admin</h4>
-                        <div class="count" id="countSuperAdmin">0</div>
-                        <p class="text-secondary">System Monitor</p>
+                    <div class="stat-card">
+                        <div class="stat-icon blue">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="totalUsers">0</h4>
+                            <p>Total Users</p>
+                        </div>
                     </div>
-                    <div class="role-card" style="border-color:#3182ce;">
-                        <h4>Admin</h4>
-                        <div class="count" id="countAdmin">0</div>
-                        <p class="text-secondary">School Admin</p>
-                    </div>
-                    <div class="role-card" style="border-color:#38a169;">
-                        <h4>Principal</h4>
-                        <div class="count" id="countPrincipal">0</div>
-                        <p class="text-secondary">School Head</p>
-                    </div>
-                    <div class="role-card" style="border-color:#d69e2e;">
-                        <h4>Teachers</h4>
-                        <div class="count" id="countTeacher">0</div>
-                        <p class="text-secondary">Faculty Members</p>
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="activeUsers">0</h4>
+                            <p>Active Users</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="role-card" style="border-color:#4299e1;">
-                        <h4>Students</h4>
-                        <div class="count" id="countStudent">0</div>
-                        <p class="text-secondary">Enrolled Learners</p>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>All Users</h3>
+                        <select class="form-control" id="filterRole" onchange="filterUsers()" style="width:180px;">
+                            <option value="">All Roles</option>
+                            <option value="super_admin">Super Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="principal">Principal</option>
+                            <option value="registrar">Registrar</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                        </select>
                     </div>
-                    <div class="role-card" style="border-color:#805ad5;">
-                        <h4>Parents</h4>
-                        <div class="count" id="countParent">0</div>
-                        <p class="text-secondary">Guardians</p>
-                    </div>
-                    <div class="role-card" style="border-color:#dd6b20;">
-                        <h4>Registrar</h4>
-                        <div class="count" id="countRegistrar">0</div>
-                        <p class="text-secondary">Records Officer</p>
-                    </div>
-                    <div class="role-card" style="border-color:#718096;">
-                        <h4>Total Users</h4>
-                        <div class="count" id="countTotal">0</div>
-                        <p class="text-secondary">All Accounts</p>
-                    </div>
-                </div>
-
-                <div class="grid-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>User Activity</h3>
-                        </div>
-                        <div class="card-body" id="userActivity">
-                            <p class="text-secondary">Loading...</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Recent Registrations</h3>
-                        </div>
-                        <div class="card-body" id="recentUsers">
-                            <p class="text-secondary">Loading...</p>
-                        </div>
+                    <div class="card-body">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f7fafc;">
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Username</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Email</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Role</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Status</th>
+                                    <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody">
+                                <tr><td colspan="5" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <div class="modal" id="createUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Account</h3>
+                <button class="modal-close" onclick="hideModal('createUserModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm" onsubmit="createUser(event)">
+                    <div class="form-group">
+                        <label>Account Type *</label>
+                        <select class="form-control" id="newRole" required onchange="toggleFields()">
+                            <option value="">Select Role</option>
+                            <option value="registrar">Registrar</option>
+                            <option value="admin">Admin</option>
+                            <option value="principal">Principal</option>
+                            <option value="teacher">Teacher</option>
+                        </select>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Username *</label>
+                            <input type="text" class="form-control" id="newUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" class="form-control" id="newEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password *</label>
+                            <input type="password" class="form-control" id="newPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password *</label>
+                            <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                        </div>
+                    </div>
+                    <div id="teacherFields" style="display:none;">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>First Name *</label>
+                                <input type="text" class="form-control" id="tFirstName">
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name *</label>
+                                <input type="text" class="form-control" id="tLastName">
+                            </div>
+                            <div class="form-group">
+                                <label>Employee ID</label>
+                                <input type="text" class="form-control" id="tEmployeeId">
+                            </div>
+                            <div class="form-group">
+                                <label>Department</label>
+                                <input type="text" class="form-control" id="tDepartment">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="registrarInfo" style="display:none;background:#f0fff4;padding:12px;border-radius:8px;margin-bottom:15px;">
+                        <strong>Registrar Account:</strong> This account can enroll students, create student/teacher accounts, manage sections, and generate SF9/SF10 reports.
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:15px;">
+                        <button type="button" class="btn btn-outline" onclick="hideModal('createUserModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
     <script>
-        initDashboard('system-monitor');
+        initDashboard('system-users');
+        let allUsers = [];
 
         async function loadUsers() {
             try {
-                const overview = await api.get('/system/stats/overview');
-                const roles = overview.users_by_role || {};
+                const stats = await api.get('/system/stats/overview');
+                document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                document.getElementById('activeUsers').textContent = stats.active_users || 0;
 
-                document.getElementById('countSuperAdmin').textContent = roles.super_admin || 0;
-                document.getElementById('countAdmin').textContent = roles.admin || 0;
-                document.getElementById('countPrincipal').textContent = roles.principal || 0;
-                document.getElementById('countTeacher').textContent = roles.teacher || 0;
-                document.getElementById('countStudent').textContent = roles.student || 0;
-                document.getElementById('countParent').textContent = roles.parent || 0;
-                document.getElementById('countRegistrar').textContent = roles.registrar || 0;
-                document.getElementById('countTotal').textContent = Object.values(roles).reduce((a, b) => a + b, 0);
-
-                const activityContainer = document.getElementById('userActivity');
-                const total = Object.values(roles).reduce((a, b) => a + b, 0);
-                activityContainer.innerHTML = Object.entries(roles).map(([role, count]) => {
-                    const pct = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                    return `
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                            <div style="width:100px;font-size:0.85rem;font-weight:500;text-transform:capitalize;">${role.replace('_', ' ')}</div>
-                            <div style="flex:1;background:#e2e8f0;border-radius:4px;height:20px;overflow:hidden;">
-                                <div style="height:100%;width:${pct}%;background:#3182ce;border-radius:4px;"></div>
-                            </div>
-                            <div style="width:80px;text-align:right;font-size:0.85rem;">${count} (${pct}%)</div>
-                        </div>
-                    `;
-                }).join('');
-
+                const users = await api.get('/system/logs?limit=100').catch(() => []);
+                allUsers = stats.users || [];
+                renderUsers(allUsers);
             } catch (err) {
                 console.error(err);
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersBody');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#718096;">No users found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:500;">${u.username}</td>
+                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${u.email || '-'}</td>
+                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><span class="role-badge role-${u.role}">${u.role.replace('_', ' ').toUpperCase()}</span></td>
+                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><span style="color:${u.is_active ? '#276749' : '#9b2c2c'};">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">
+                        <button class="btn btn-sm btn-outline" onclick="resetPassword(${u.id}, '${u.username}')">Reset Password</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterUsers() {
+            const role = document.getElementById('filterRole').value;
+            const filtered = role ? allUsers.filter(u => u.role === role) : allUsers;
+            renderUsers(filtered);
+        }
+
+        function toggleFields() {
+            const role = document.getElementById('newRole').value;
+            document.getElementById('teacherFields').style.display = (role === 'teacher') ? 'block' : 'none';
+            document.getElementById('registrarInfo').style.display = (role === 'registrar') ? 'block' : 'none';
+        }
+
+        async function createUser(e) {
+            e.preventDefault();
+            const password = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            if (password !== confirm) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            try {
+                await api.post('/auth/register', {
+                    username: document.getElementById('newUsername').value,
+                    email: document.getElementById('newEmail').value,
+                    password: password,
+                    role: document.getElementById('newRole').value,
+                });
+                showNotification('Account created successfully');
+                hideModal('createUserModal');
+                document.getElementById('createUserForm').reset();
+                loadUsers();
+            } catch (err) {
+                showNotification(err.message || 'Error creating account', 'error');
+            }
+        }
+
+        async function resetPassword(userId, username) {
+            const newPass = prompt(`Enter new password for ${username}:`);
+            if (!newPass || newPass.length < 6) {
+                showNotification('Password must be at least 6 characters', 'error');
+                return;
+            }
+            try {
+                await api.post('/auth/register', {
+                    username: username,
+                    email: username + '@jnhs.edu',
+                    password: newPass,
+                    role: 'admin',
+                });
+                showNotification('Password reset. User may need to re-login.');
+            } catch (err) {
+                showNotification(err.message || 'Error resetting password', 'error');
             }
         }
 

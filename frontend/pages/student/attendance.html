@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Attendance - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .att-present { background: #c6f6d5; color: #276749; }
+        .att-absent { background: #fed7d7; color: #9b2c2c; }
+        .att-late { background: #fefcbf; color: #975a16; }
+        .att-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>My Attendance</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon green">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="presentCount">0</h4>
+                            <p>Days Present</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="absentCount">0</h4>
+                            <p>Days Absent</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">&#9632;</div>
+                        <div class="stat-info">
+                            <h4 id="lateCount">0</h4>
+                            <p>Days Tardy</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Attendance Record</h3>
+                    </div>
+                    <div class="card-body">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f7fafc;">
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Date</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Status</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceBody">
+                                <tr><td colspan="3" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('attendance');
+
+        async function loadAttendance() {
+            try {
+                const data = await api.get('/student/attendance');
+                const tbody = document.getElementById('attendanceBody');
+
+                document.getElementById('presentCount').textContent = data.summary ? data.summary.present : 0;
+                document.getElementById('absentCount').textContent = data.summary ? data.summary.absent : 0;
+                document.getElementById('lateCount').textContent = data.summary ? data.summary.late : 0;
+
+                if (!data.records || data.records.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="padding:20px;text-align:center;color:#718096;">No attendance records yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.records.map(r => `
+                    <tr>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${formatDate(r.date)}</td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+                            <span class="att-badge att-${r.status}">${r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span>
+                        </td>
+                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${r.remarks || '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadAttendance();
+    </script>
+</body>
+</html>

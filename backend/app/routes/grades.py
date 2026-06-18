@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 from app.database import get_db
 from app.models.grade import Grade
 from app.models.student import Student
@@ -98,6 +98,79 @@ def create_grade(
     db.commit()
     db.refresh(new_grade)
     return new_grade
+
+
+@router.post("/bulk", response_model=List[GradeResponse])
+def bulk_create_grades(
+    grades_input: List[GradeInput],
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("admin", "teacher")),
+):
+    saved = []
+    for grade_input in grades_input:
+        subject = db.query(Subject).filter(Subject.id == grade_input.subject_id).first()
+        if not subject:
+            continue
+
+        existing = db.query(Grade).filter(
+            Grade.student_id == grade_input.student_id,
+            Grade.subject_id == grade_input.subject_id,
+            Grade.quarter == grade_input.quarter,
+            Grade.school_year == grade_input.school_year,
+        ).first()
+
+        computed = compute_quarterly_grade(
+            ww_score=grade_input.ww_score or 0,
+            ww_possible=grade_input.ww_possible or 0,
+            pt_score=grade_input.pt_score or 0,
+            pt_possible=grade_input.pt_possible or 0,
+            qa_score=grade_input.qa_score or 0,
+            qa_possible=grade_input.qa_possible or 0,
+            subject_code=subject.code,
+        )
+
+        if existing:
+            existing.ww_score = grade_input.ww_score
+            existing.ww_possible = grade_input.ww_possible
+            existing.pt_score = grade_input.pt_score
+            existing.pt_possible = grade_input.pt_possible
+            existing.qa_score = grade_input.qa_score
+            existing.qa_possible = grade_input.qa_possible
+            existing.ww_percentage = computed["ww_percentage"]
+            existing.pt_percentage = computed["pt_percentage"]
+            existing.qa_percentage = computed["qa_percentage"]
+            existing.raw_grade = computed["raw_grade"]
+            existing.transmuted_grade = computed["transmuted_grade"]
+            existing.encoded_by = user.id
+            db.commit()
+            db.refresh(existing)
+            saved.append(existing)
+        else:
+            new_grade = Grade(
+                student_id=grade_input.student_id,
+                subject_id=grade_input.subject_id,
+                section_id=grade_input.section_id,
+                school_year=grade_input.school_year,
+                semester=grade_input.semester,
+                quarter=grade_input.quarter,
+                ww_score=grade_input.ww_score,
+                ww_possible=grade_input.ww_possible,
+                pt_score=grade_input.pt_score,
+                pt_possible=grade_input.pt_possible,
+                qa_score=grade_input.qa_score,
+                qa_possible=grade_input.qa_possible,
+                ww_percentage=computed["ww_percentage"],
+                pt_percentage=computed["pt_percentage"],
+                qa_percentage=computed["qa_percentage"],
+                raw_grade=computed["raw_grade"],
+                transmuted_grade=computed["transmuted_grade"],
+                encoded_by=user.id,
+            )
+            db.add(new_grade)
+            db.commit()
+            db.refresh(new_grade)
+            saved.append(new_grade)
+    return saved
 
 
 @router.put("/{grade_id}", response_model=GradeResponse)
