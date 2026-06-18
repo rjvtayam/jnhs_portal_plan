@@ -27,8 +27,9 @@
         .nav-brand-text { font-size: 1.1rem; font-weight: 700; color: #fff; }
         .nav-brand-text span { color: #00e5ff; }
         .nav-links { display: flex; align-items: center; gap: 30px; }
-        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.3s; }
+        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.3s; padding: 6px 0; border-bottom: 2px solid transparent; }
         .nav-links a:hover { color: #00e5ff; }
+        .nav-links a.active { color: #00e5ff; border-bottom-color: #00e5ff; text-shadow: 0 0 8px rgba(0,229,255,0.3); }
 
         /* HERO */
         .hero {
@@ -527,6 +528,33 @@
                 if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
+
+        // Scroll spy - highlight active nav link based on scroll position
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+
+        function updateActiveNav() {
+            const scrollY = window.scrollY + 100;
+
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+        window.addEventListener('load', updateActiveNav);
     </script>
 </body>
 </html>
