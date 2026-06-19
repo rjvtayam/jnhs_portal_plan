@@ -242,10 +242,19 @@
         .faq-item:hover { border-color: rgba(233,30,99,0.3); }
         .faq-question {
             padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between;
-            align-items: center; font-weight: 600; color: #1a1a2e;
+            align-items: center; font-weight: 600; color: #1a1a2e; gap: 14px;
         }
-        .faq-question i { color: #e91e63; transition: transform 0.3s; }
-        .faq-item.open .faq-question i { transform: rotate(180deg); }
+        .faq-q-icon {
+            width: 38px; height: 38px; border-radius: 10px; display: flex;
+            align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
+        }
+        .faq-q-icon.pink { background: rgba(233,30,99,0.1); color: #e91e63; }
+        .faq-q-icon.cyan { background: rgba(0,229,255,0.1); color: #00b8d4; }
+        .faq-q-icon.purple { background: rgba(124,77,255,0.1); color: #7c4dff; }
+        .faq-q-icon.green { background: rgba(0,230,118,0.1); color: #00c853; }
+        .faq-q-icon.yellow { background: rgba(255,193,7,0.1); color: #f57c00; }
+        .faq-question i.fas { color: #e91e63; transition: transform 0.3s; font-size: 0.85rem; }
+        .faq-item.open .faq-question i.fas { transform: rotate(180deg); }
         .faq-answer {
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
             background: #f8f9fc; padding: 0 24px; color: #5a6072; line-height: 1.7;
@@ -285,6 +294,7 @@
         .map-section { max-width: 1000px; margin: 0 auto; }
         .map-section h3 { font-size: 1.1rem; color: #1a1a2e; margin-bottom: 16px; text-align: center; }
         #jnhsMap { width: 100%; height: 400px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 2px 12px rgba(0,0,0,0.08); z-index: 1; }
+        #jnhsMap .leaflet-control-attribution { display: none !important; }
 
         /* FOOTER */
         footer {
@@ -590,23 +600,23 @@
         <p class="section-subtitle">Find answers to common questions about the JNHS Portal.</p>
         <div class="faq-list">
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">How do I log in to the portal? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-question"><div class="faq-q-icon pink"><i class="fas fa-sign-in-alt"></i></div>How do I log in to the portal? <i class="fas fa-chevron-down"></i></div>
                 <div class="faq-answer"><p>Students use their LRN as both username and password. Parents use their email as username and their child's LRN as password. Contact the registrar if you don't have an account yet.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">How are grades computed in the portal? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-question"><div class="faq-q-icon cyan"><i class="fas fa-calculator"></i></div>How are grades computed in the portal? <i class="fas fa-chevron-down"></i></div>
                 <div class="faq-answer"><p>The portal follows the DepEd K-12 grading system. Written Works (60%) and Performance Tasks (40%) are combined per quarter, then transmuted using the formula: 50 + (Raw Score / 2).</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">Can I download my Report Card (SF9)? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-question"><div class="faq-q-icon purple"><i class="fas fa-file-pdf"></i></div>Can I download my Report Card (SF9)? <i class="fas fa-chevron-down"></i></div>
                 <div class="faq-answer"><p>Yes! Students and parents can download SF9 (Report Card) and SF10 (Permanent Record) as PDF files from the Reports section. Contact the registrar for assistance.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">How do I enroll for the new school year? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-question"><div class="faq-q-icon green"><i class="fas fa-user-plus"></i></div>How do I enroll for the new school year? <i class="fas fa-chevron-down"></i></div>
                 <div class="faq-answer"><p>Enrollment can be processed through the portal or by visiting the school. The registrar will assist with section assignment and enrollment confirmation.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">Who do I contact for portal issues? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-question"><div class="faq-q-icon yellow"><i class="fas fa-headset"></i></div>Who do I contact for portal issues? <i class="fas fa-chevron-down"></i></div>
                 <div class="faq-answer"><p>For technical issues, please email portal@jnhs.edu.ph or visit the school office during business hours. You can also reach us through our Facebook page.</p></div>
             </div>
         </div>
@@ -859,32 +869,27 @@
         window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
 
         // ===== LEAFLET MAP - SATELLITE =====
-        // Jomalig, Quezon approximate coordinates
-        const jnhsLat = 14.2900;
-        const jnhsLng = 122.3100;
+        // Jomalig National High School exact coordinates
+        const jnhsLat = 14.2883;
+        const jnhsLng = 122.3106;
 
-        const map = L.map('jnhsMap', { zoomControl: true }).setView([jnhsLat, jnhsLng], 15);
+        const map = L.map('jnhsMap', {
+            zoomControl: true,
+            attributionControl: false,
+        }).setView([jnhsLat, jnhsLng], 17);
 
         // Satellite tiles (Esri World Imagery - free)
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, and the GIS User Community',
             maxZoom: 19,
-        }).addTo(map);
-
-        // Labels layer on top
-        L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
-            attribution: 'Map labels by Stamen',
-            maxZoom: 19,
-            opacity: 0.7,
         }).addTo(map);
 
         // Custom marker
         const pinkIcon = L.divIcon({
             className: 'custom-pin',
-            html: '<div style="width:36px;height:36px;background:linear-gradient(135deg,#e91e63,#7c4dff);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(233,30,99,0.4);border:3px solid white;"><i class="fas fa-graduation-cap" style="color:white;font-size:14px;transform:rotate(45deg);"></i></div>',
-            iconSize: [36, 36],
-            iconAnchor: [18, 36],
-            popupAnchor: [0, -36],
+            html: '<div style="width:40px;height:40px;background:linear-gradient(135deg,#e91e63,#7c4dff);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(233,30,99,0.4);border:3px solid white;"><i class="fas fa-graduation-cap" style="color:white;font-size:15px;transform:rotate(45deg);"></i></div>',
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40],
         });
 
         L.marker([jnhsLat, jnhsLng], { icon: pinkIcon })
