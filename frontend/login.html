@@ -6,127 +6,110 @@
     <title>JNHS Portal - Login</title>
     <link rel="stylesheet" href="/css/main.css">
     <style>
-        .login-left::before {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(233, 30, 99, 0.15) 0%, transparent 70%);
-            top: 20%;
-            left: 30%;
-            animation: float 8s ease-in-out infinite;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1a1a2e; min-height: 100vh; overflow: hidden; }
+
+        .login-container {
+            display: flex; min-height: 100vh;
         }
-        .login-left::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(0, 229, 255, 0.1) 0%, transparent 70%);
-            bottom: 20%;
-            right: 20%;
-            animation: float 10s ease-in-out infinite reverse;
+
+        /* LEFT PANEL */
+        .login-left {
+            flex: 1; background: linear-gradient(135deg, #fafbff 0%, #f0f4ff 50%, #fff5f8 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 60px; position: relative; overflow: hidden;
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-30px) scale(1.1); }
-        }
+        .particles-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .login-left-content { position: relative; z-index: 2; text-align: center; }
         .school-badge {
-            width: 80px;
-            height: 80px;
-            background: var(--gradient-1);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-glow-pink);
-            position: relative;
-            z-index: 1;
+            width: 90px; height: 90px; background: linear-gradient(135deg, #e91e63, #7c4dff);
+            border-radius: 22px; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 28px;
+            box-shadow: 0 8px 30px rgba(233,30,99,0.3);
         }
         .login-left h1 {
-            position: relative;
-            z-index: 1;
+            font-size: 2rem; font-weight: 800; margin-bottom: 8px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #e91e63 60%, #7c4dff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .login-left > p {
-            position: relative;
-            z-index: 1;
+        .login-left .subtitle { color: #5a6072; font-size: 1rem; }
+        .login-left .school-id { color: #8892b0; font-size: 0.85rem; margin-top: 8px; }
+
+        /* RIGHT PANEL */
+        .login-right {
+            width: 500px; display: flex; align-items: center; justify-content: center;
+            padding: 60px; background: #ffffff; border-left: 1px solid #e2e8f0;
         }
-        .login-form .form-control {
-            background: var(--bg-input);
-            border-color: var(--border-color);
-        }
-        .login-form .form-control:focus {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
-        }
-        .login-form .btn-primary {
-            width: 100%;
-            padding: 13px;
-            font-size: 0.95rem;
-        }
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin: 20px 0;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-color);
-        }
-        .input-icon-wrapper {
-            position: relative;
-        }
+        .login-form { width: 100%; max-width: 360px; }
+        .login-form h2 { font-size: 1.8rem; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+        .login-form .subtitle { color: #5a6072; font-size: 0.95rem; margin-bottom: 32px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: #3a3f5a; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+        .input-icon-wrapper { position: relative; }
         .input-icon-wrapper .form-control {
-            padding-left: 40px;
+            width: 100%; padding: 12px 14px 12px 40px; border-radius: 10px;
+            border: 1px solid #e2e8f0; background: #f8f9fc; color: #1a1a2e;
+            font-size: 0.9rem; outline: none; transition: all 0.3s;
+        }
+        .input-icon-wrapper .form-control:focus {
+            border-color: #e91e63; box-shadow: 0 0 0 3px rgba(233,30,99,0.08);
         }
         .input-icon-wrapper i.input-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            pointer-events: none;
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: #8892b0; font-size: 0.9rem; pointer-events: none;
         }
         .password-toggle {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 4px;
-            transition: color 0.3s;
-            z-index: 2;
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #8892b0; cursor: pointer;
+            font-size: 1rem; padding: 4px; transition: color 0.3s; z-index: 2;
         }
-        .password-toggle:hover {
-            color: var(--neon-cyan);
+        .password-toggle:hover { color: #e91e63; }
+        .input-icon-wrapper .form-control.password-input { padding-right: 42px; }
+
+        .btn-login {
+            width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 600;
+            border-radius: 10px; border: none; cursor: pointer;
+            background: linear-gradient(135deg, #e91e63, #c2185b); color: white;
+            box-shadow: 0 4px 15px rgba(233,30,99,0.3); transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .input-icon-wrapper .form-control.password-input {
-            padding-right: 42px;
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,30,99,0.4); }
+
+        .divider {
+            display: flex; align-items: center; gap: 16px; margin: 24px 0;
+            color: #8892b0; font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: #e2e8f0;
+        }
+
+        #loginError {
+            color: #e53935; margin-bottom: 15px; display: none; font-size: 0.85rem;
+            background: rgba(229,57,53,0.08); padding: 10px 14px; border-radius: 8px;
+            border: 1px solid rgba(229,57,53,0.2);
+        }
+
+        .login-footer {
+            text-align: center; font-size: 0.75rem; color: #8892b0;
+        }
+
+        @media (max-width: 900px) {
+            .login-left { display: none; }
+            .login-right { width: 100%; border-left: none; }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-left">
-            <div class="school-badge">J</div>
-            <h1>JNHS Portal</h1>
-            <p>Jomalig National High School</p>
-            <p style="color: var(--text-muted); margin-top: 8px; font-size: 0.9rem;">Jomalig, Quezon | School ID: 301366</p>
+            <canvas class="particles-canvas" id="particles"></canvas>
+            <div class="login-left-content">
+                <div class="school-badge">J</div>
+                <h1>JNHS Portal</h1>
+                <p class="subtitle">Jomalig National High School</p>
+                <p class="school-id">Jomalig, Quezon | School ID: 301366</p>
+            </div>
         </div>
         <div class="login-right">
             <div class="login-form">
@@ -150,11 +133,11 @@
                             </button>
                         </div>
                     </div>
-                    <div id="loginError" style="color: var(--danger); margin-bottom: 15px; display: none; font-size: 0.85rem;"></div>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In</button>
+                    <div id="loginError" style="display: none;"></div>
+                    <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i>Sign In</button>
                 </form>
                 <div class="divider">JNHS Portal v1.0</div>
-                <p style="text-align:center; font-size:0.75rem; color: var(--text-muted);">DepEd K-12 Grading System</p>
+                <p class="login-footer">DepEd K-12 Grading System</p>
             </div>
         </div>
     </div>
@@ -164,7 +147,6 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
-
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
@@ -220,6 +202,48 @@
                 errorEl.style.display = 'block';
             }
         });
+
+        // Animated particles
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const PARTICLE_COUNT = 35;
+        const colors = ['rgba(233,30,99,0.25)', 'rgba(0,229,255,0.25)', 'rgba(124,77,255,0.25)', 'rgba(233,30,99,0.15)', 'rgba(0,229,255,0.15)'];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 3 + 2,
+                dx: (Math.random() - 0.5) * 0.5,
+                dy: (Math.random() - 0.5) * 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+            };
+        }
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(createParticle());
+        }
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        resizeCanvas(); initParticles(); drawParticles();
+        window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
     </script>
 </body>
 </html>

@@ -1,3 +1,25 @@
+// ===== THEME SYSTEM =====
+function getTheme() {
+    return localStorage.getItem('jnhs_theme') || 'light';
+}
+
+function setTheme(theme) {
+    localStorage.setItem('jnhs_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = document.getElementById('themeIcon');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+}
+
+function toggleTheme() {
+    const current = getTheme();
+    setTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// Apply theme immediately on script load
+document.documentElement.setAttribute('data-theme', getTheme());
+
 function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
@@ -337,9 +359,15 @@ function initDashboard(activePage) {
                 <i class="fas fa-envelope"></i>
                 <span class="notif-badge" id="msgBadge" style="display:none">0</span>
             </a>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+                <i class="fas ${getTheme() === 'dark' ? 'fa-sun' : 'fa-moon'}" id="themeIcon"></i>
+            </button>
         `;
         topbarActions.insertAdjacentHTML('afterbegin', bellHtml);
     }
+
+    // Apply current theme
+    setTheme(getTheme());
 
     // Start notification + message polling
     startNotifPolling();

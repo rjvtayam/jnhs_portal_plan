@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="/css/main.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #e0e0e0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1a1a2e; overflow-x: hidden; }
 
         /* NAVBAR */
         .landing-nav {
-            background: rgba(10, 10, 26, 0.95); backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
             padding: 14px 40px; display: flex; justify-content: space-between; align-items: center;
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            border-bottom: 1px solid rgba(0,229,255,0.1);
+            border-bottom: 1px solid #e2e8f0;
         }
         .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .nav-logo {
@@ -22,40 +22,35 @@
             background: linear-gradient(135deg, #e91e63, #7c4dff);
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 1.2rem; color: white;
-            box-shadow: 0 0 20px rgba(233,30,99,0.3);
+            box-shadow: 0 4px 15px rgba(233,30,99,0.25);
         }
-        .nav-brand-text { font-size: 1.1rem; font-weight: 700; color: #fff; }
-        .nav-brand-text span { color: #00e5ff; }
+        .nav-brand-text { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+        .nav-brand-text span { color: #e91e63; }
         .nav-links { display: flex; align-items: center; gap: 30px; }
-        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.3s; padding: 6px 0; border-bottom: 2px solid transparent; }
-        .nav-links a:hover { color: #00e5ff; }
-        .nav-links a.active { color: #00e5ff; border-bottom-color: #00e5ff; text-shadow: 0 0 8px rgba(0,229,255,0.3); }
+        .nav-links a { color: #5a6072; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.3s; padding: 6px 0; border-bottom: 2px solid transparent; }
+        .nav-links a:hover { color: #e91e63; }
+        .nav-links a.active { color: #e91e63; border-bottom-color: #e91e63; }
 
         /* HERO */
         .hero {
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
             padding: 120px 40px 80px; position: relative; text-align: center;
-            background: radial-gradient(ellipse at 50% 0%, rgba(124,77,255,0.15) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 50%, rgba(233,30,99,0.1) 0%, transparent 40%);
+            background: linear-gradient(135deg, #fafbff 0%, #f0f4ff 50%, #fff5f8 100%);
+            overflow: hidden;
         }
-        .hero::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c4dff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.5;
-        }
-        .hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .hero-content { position: relative; z-index: 2; max-width: 800px; }
         .hero-badge {
             display: inline-block; padding: 8px 20px; border-radius: 30px;
-            background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.3);
-            color: #00e5ff; font-size: 0.8rem; font-weight: 600; margin-bottom: 24px;
+            background: rgba(233,30,99,0.08); border: 1px solid rgba(233,30,99,0.2);
+            color: #e91e63; font-size: 0.8rem; font-weight: 600; margin-bottom: 24px;
             letter-spacing: 1px; text-transform: uppercase;
         }
         .hero h1 {
             font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; line-height: 1.1;
-            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #00e5ff 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #e91e63 60%, #7c4dff 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .hero p { font-size: 1.15rem; color: #8892b0; max-width: 600px; margin: 0 auto; line-height: 1.7; }
+        .hero p { font-size: 1.15rem; color: #5a6072; max-width: 600px; margin: 0 auto; line-height: 1.7; }
         .hero-buttons { margin-top: 40px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
         .hero-buttons .btn {
             padding: 14px 36px; font-size: 1rem; font-weight: 600; border-radius: 12px;
@@ -63,83 +58,88 @@
         }
         .btn-hero-primary {
             background: linear-gradient(135deg, #e91e63, #c2185b); color: white;
-            box-shadow: 0 4px 20px rgba(233,30,99,0.4);
+            box-shadow: 0 4px 20px rgba(233,30,99,0.3);
         }
-        .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(233,30,99,0.6); }
+        .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(233,30,99,0.4); }
         .btn-hero-secondary {
-            background: transparent; color: #00e5ff;
-            border: 1px solid rgba(0,229,255,0.4);
+            background: white; color: #e91e63;
+            border: 1px solid rgba(233,30,99,0.3);
         }
-        .btn-hero-secondary:hover { background: rgba(0,229,255,0.1); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+        .btn-hero-secondary:hover { background: rgba(233,30,99,0.05); box-shadow: 0 4px 15px rgba(233,30,99,0.1); }
+
+        /* ANIMATED DOTS */
+        .particles-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
 
         /* SECTION COMMONS */
         section { padding: 100px 40px; }
         .section-title {
-            text-align: center; font-size: 2.2rem; font-weight: 700; margin-bottom: 16px; color: #fff;
+            text-align: center; font-size: 2.2rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e;
         }
         .section-subtitle {
-            text-align: center; color: #5a6a8a; font-size: 1rem; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto;
+            text-align: center; color: #5a6072; font-size: 1rem; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto;
         }
-        .section-title span { color: #00e5ff; }
+        .section-title span { color: #e91e63; }
 
         /* FEATURES */
-        .features { background: #0a0a1a; }
+        .features { background: #ffffff; }
         .features-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px; max-width: 1200px; margin: 0 auto;
         }
         .feature-card {
-            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
-            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 32px; text-align: center; transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .feature-card:hover {
-            border-color: rgba(0,229,255,0.4); transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0,229,255,0.1);
+            border-color: rgba(233,30,99,0.3); transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(233,30,99,0.08);
         }
         .feature-icon {
             width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 20px;
             display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
         }
-        .feature-icon.pink { background: rgba(233,30,99,0.15); color: #e91e63; box-shadow: 0 0 20px rgba(233,30,99,0.15); }
-        .feature-icon.cyan { background: rgba(0,229,255,0.15); color: #00e5ff; box-shadow: 0 0 20px rgba(0,229,255,0.15); }
-        .feature-icon.purple { background: rgba(124,77,255,0.15); color: #7c4dff; box-shadow: 0 0 20px rgba(124,77,255,0.15); }
-        .feature-icon.green { background: rgba(0,230,118,0.15); color: #00e676; box-shadow: 0 0 20px rgba(0,230,118,0.15); }
-        .feature-icon.yellow { background: rgba(255,193,7,0.15); color: #ffc107; box-shadow: 0 0 20px rgba(255,193,7,0.15); }
-        .feature-icon.red { background: rgba(255,82,82,0.15); color: #ff5252; box-shadow: 0 0 20px rgba(255,82,82,0.15); }
-        .feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; color: #fff; }
-        .feature-card p { color: #5a6a8a; font-size: 0.9rem; line-height: 1.6; }
+        .feature-icon.pink { background: rgba(233,30,99,0.1); color: #e91e63; }
+        .feature-icon.cyan { background: rgba(0,229,255,0.1); color: #00b8d4; }
+        .feature-icon.purple { background: rgba(124,77,255,0.1); color: #7c4dff; }
+        .feature-icon.green { background: rgba(0,230,118,0.1); color: #00c853; }
+        .feature-icon.yellow { background: rgba(255,193,7,0.1); color: #f57c00; }
+        .feature-icon.red { background: rgba(255,82,82,0.1); color: #e53935; }
+        .feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; color: #1a1a2e; }
+        .feature-card p { color: #5a6072; font-size: 0.9rem; line-height: 1.6; }
 
         /* PARTNERS SLIDER */
-        .partners { background: rgba(13,13,43,0.5); padding: 60px 40px; overflow: hidden; }
+        .partners { background: #f8f9fc; padding: 60px 40px; overflow: hidden; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
         .partners-track {
             display: flex; gap: 60px; animation: scroll 30s linear infinite; width: max-content;
         }
         .partner-item {
             display: flex; align-items: center; gap: 12px; white-space: nowrap;
-            color: #5a6a8a; font-size: 1rem; font-weight: 600;
+            color: #5a6072; font-size: 1rem; font-weight: 600;
             padding: 16px 28px; border-radius: 12px;
-            background: rgba(30,42,74,0.3); border: 1px solid rgba(124,77,255,0.1);
+            background: #ffffff; border: 1px solid #e2e8f0;
         }
         .partner-item i { font-size: 1.5rem; color: #7c4dff; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         /* TESTIMONIALS */
-        .testimonials { background: #0a0a1a; }
+        .testimonials { background: #ffffff; }
         .testimonials-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 24px; max-width: 1200px; margin: 0 auto;
         }
         .testimonial-card {
-            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
-            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
             padding: 28px; position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .testimonial-card::before {
             content: '\201C'; position: absolute; top: 12px; left: 20px;
-            font-size: 4rem; color: rgba(233,30,99,0.15); font-family: serif; line-height: 1;
+            font-size: 4rem; color: rgba(233,30,99,0.1); font-family: serif; line-height: 1;
         }
-        .testimonial-text { color: #b0b0d0; font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px; position: relative; z-index: 1; }
+        .testimonial-text { color: #3a3f5a; font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px; position: relative; z-index: 1; }
         .testimonial-author { display: flex; align-items: center; gap: 12px; }
         .testimonial-avatar {
             width: 44px; height: 44px; border-radius: 50%;
@@ -147,61 +147,62 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 1rem; color: white;
         }
-        .testimonial-name { font-weight: 600; color: #fff; font-size: 0.95rem; }
-        .testimonial-role { font-size: 0.8rem; color: #5a6a8a; }
+        .testimonial-name { font-weight: 600; color: #1a1a2e; font-size: 0.95rem; }
+        .testimonial-role { font-size: 0.8rem; color: #5a6072; }
 
         /* FAQ */
-        .faq { background: rgba(13,13,43,0.5); }
+        .faq { background: #f8f9fc; }
         .faq-list { max-width: 800px; margin: 0 auto; }
         .faq-item {
-            border: 1px solid rgba(124,77,255,0.15); border-radius: 12px;
+            border: 1px solid #e2e8f0; border-radius: 12px;
             margin-bottom: 12px; overflow: hidden; transition: all 0.3s;
+            background: #ffffff;
         }
-        .faq-item:hover { border-color: rgba(0,229,255,0.3); }
+        .faq-item:hover { border-color: rgba(233,30,99,0.3); }
         .faq-question {
             padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between;
-            align-items: center; background: rgba(13,13,43,0.95); font-weight: 600; color: #e0e0e0;
+            align-items: center; font-weight: 600; color: #1a1a2e;
         }
-        .faq-question i { color: #00e5ff; transition: transform 0.3s; }
+        .faq-question i { color: #e91e63; transition: transform 0.3s; }
         .faq-item.open .faq-question i { transform: rotate(180deg); }
         .faq-answer {
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
-            background: rgba(20,20,50,0.95); padding: 0 24px; color: #8892b0; line-height: 1.7;
+            background: #f8f9fc; padding: 0 24px; color: #5a6072; line-height: 1.7;
         }
         .faq-item.open .faq-answer { max-height: 200px; padding: 0 24px 18px; }
 
         /* CONTACT */
-        .contact { background: #0a0a1a; }
+        .contact { background: #ffffff; }
         .contact-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
             max-width: 1000px; margin: 0 auto;
         }
         .contact-info-card {
-            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
-            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px; padding: 32px;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        .contact-info-card h3 { color: #fff; margin-bottom: 24px; font-size: 1.2rem; }
+        .contact-info-card h3 { color: #1a1a2e; margin-bottom: 24px; font-size: 1.2rem; }
         .contact-item { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-        .contact-item i { width: 40px; height: 40px; border-radius: 10px; background: rgba(0,229,255,0.1); color: #00e5ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .contact-item span { color: #b0b0d0; font-size: 0.9rem; }
+        .contact-item i { width: 40px; height: 40px; border-radius: 10px; background: rgba(233,30,99,0.08); color: #e91e63; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .contact-item span { color: #3a3f5a; font-size: 0.9rem; }
         .contact-form-card {
-            background: linear-gradient(135deg, rgba(13,13,43,0.95), rgba(20,20,50,0.95));
-            border: 1px solid rgba(124,77,255,0.15); border-radius: 16px; padding: 32px;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        .contact-form-card h3 { color: #fff; margin-bottom: 24px; font-size: 1.2rem; }
+        .contact-form-card h3 { color: #1a1a2e; margin-bottom: 24px; font-size: 1.2rem; }
         .contact-form-card .form-group { margin-bottom: 16px; }
-        .contact-form-card label { display: block; color: #8892b0; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
+        .contact-form-card label { display: block; color: #5a6072; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
         .contact-form-card input, .contact-form-card textarea {
-            width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(124,77,255,0.2);
-            background: rgba(10,10,26,0.8); color: #e0e0e0; font-size: 0.9rem; outline: none;
+            width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;
+            background: #f8f9fc; color: #1a1a2e; font-size: 0.9rem; outline: none;
             transition: border-color 0.3s;
         }
-        .contact-form-card input:focus, .contact-form-card textarea:focus { border-color: #00e5ff; }
+        .contact-form-card input:focus, .contact-form-card textarea:focus { border-color: #e91e63; }
         .contact-form-card textarea { min-height: 100px; resize: vertical; }
 
         /* FOOTER */
         footer {
-            background: rgba(13,13,43,0.98); border-top: 1px solid rgba(124,77,255,0.15);
+            background: #1a1a2e; border-top: 1px solid #2a2a4a;
             padding: 60px 40px 30px;
         }
         .footer-grid {
@@ -210,22 +211,22 @@
         }
         .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
         .footer-brand .nav-logo { width: 36px; height: 36px; font-size: 1rem; }
-        .footer-brand-text { font-size: 1rem; font-weight: 700; color: #fff; }
-        footer p { color: #5a6a8a; font-size: 0.85rem; line-height: 1.6; }
-        footer h4 { color: #fff; font-size: 0.95rem; margin-bottom: 16px; font-weight: 600; }
+        .footer-brand-text { font-size: 1rem; font-weight: 700; color: #ffffff; }
+        footer p { color: #8892b0; font-size: 0.85rem; line-height: 1.6; }
+        footer h4 { color: #ffffff; font-size: 0.95rem; margin-bottom: 16px; font-weight: 600; }
         footer ul { list-style: none; }
         footer ul li { margin-bottom: 10px; }
-        footer ul li a { color: #5a6a8a; text-decoration: none; font-size: 0.85rem; transition: color 0.3s; }
-        footer ul li a:hover { color: #00e5ff; }
+        footer ul li a { color: #8892b0; text-decoration: none; font-size: 0.85rem; transition: color 0.3s; }
+        footer ul li a:hover { color: #e91e63; }
         .social-links { display: flex; gap: 12px; margin-top: 20px; }
         .social-link {
             width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            background: rgba(30,42,74,0.5); border: 1px solid rgba(124,77,255,0.15); color: #8892b0;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8892b0;
             text-decoration: none; font-size: 1rem; transition: all 0.3s;
         }
-        .social-link:hover { border-color: #00e5ff; color: #00e5ff; background: rgba(0,229,255,0.05); }
+        .social-link:hover { border-color: #e91e63; color: #e91e63; background: rgba(233,30,99,0.1); }
         .footer-bottom {
-            border-top: 1px solid rgba(124,77,255,0.1); padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;
             max-width: 1200px; margin: 0 auto;
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
         }
@@ -255,6 +256,7 @@
     </nav>
 
     <section class="hero">
+        <canvas class="particles-canvas" id="particles"></canvas>
         <div class="hero-content">
             <div class="hero-badge">School Year 2025-2026</div>
             <h1>Jomalig National High School</h1>
@@ -276,7 +278,6 @@
             <div class="partner-item"><i class="fas fa-file-alt"></i> SF9 / SF10 Reports</div>
             <div class="partner-item"><i class="fas fa-users"></i> School ID: 301366</div>
             <div class="partner-item"><i class="fas fa-laptop"></i> JNHS Online Portal</div>
-            <!-- Duplicate for seamless loop -->
             <div class="partner-item"><i class="fas fa-university"></i> Department of Education</div>
             <div class="partner-item"><i class="fas fa-school"></i> Jomalig National High School</div>
             <div class="partner-item"><i class="fas fa-map-marker-alt"></i> Jomalig, Quezon</div>
@@ -367,49 +368,24 @@
         <p class="section-subtitle">Find answers to common questions about the JNHS Portal.</p>
         <div class="faq-list">
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">
-                    How do I log in to the portal?
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer">
-                    <p>Students use their LRN as both username and password. Parents use their email as username and their child's LRN as password. Contact the registrar if you don't have an account yet.</p>
-                </div>
+                <div class="faq-question">How do I log in to the portal? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-answer"><p>Students use their LRN as both username and password. Parents use their email as username and their child's LRN as password. Contact the registrar if you don't have an account yet.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">
-                    How are grades computed in the portal?
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer">
-                    <p>The portal follows the DepEd K-12 grading system. Written Works (60%) and Performance Tasks (40%) are combined per quarter, then transmuted using the formula: 50 + (Raw Score / 2).</p>
-                </div>
+                <div class="faq-question">How are grades computed in the portal? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-answer"><p>The portal follows the DepEd K-12 grading system. Written Works (60%) and Performance Tasks (40%) are combined per quarter, then transmuted using the formula: 50 + (Raw Score / 2).</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">
-                    Can I download my Report Card (SF9)?
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer">
-                    <p>Yes! Students and parents can download SF9 (Report Card) and SF10 (Permanent Record) as PDF files from the Reports section. Contact the registrar for assistance.</p>
-                </div>
+                <div class="faq-question">Can I download my Report Card (SF9)? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-answer"><p>Yes! Students and parents can download SF9 (Report Card) and SF10 (Permanent Record) as PDF files from the Reports section. Contact the registrar for assistance.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">
-                    How do I enroll for the new school year?
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer">
-                    <p>Enrollment can be processed through the portal or by visiting the school. The registrar will assist with section assignment and enrollment confirmation.</p>
-                </div>
+                <div class="faq-question">How do I enroll for the new school year? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-answer"><p>Enrollment can be processed through the portal or by visiting the school. The registrar will assist with section assignment and enrollment confirmation.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question">
-                    Who do I contact for portal issues?
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer">
-                    <p>For technical issues, please email portal@jnhs.edu.ph or visit the school office during business hours. You can also reach us through our Facebook page.</p>
-                </div>
+                <div class="faq-question">Who do I contact for portal issues? <i class="fas fa-chevron-down"></i></div>
+                <div class="faq-answer"><p>For technical issues, please email portal@jnhs.edu.ph or visit the school office during business hours. You can also reach us through our Facebook page.</p></div>
             </div>
         </div>
     </section>
@@ -420,26 +396,11 @@
         <div class="contact-grid">
             <div class="contact-info-card">
                 <h3>Contact Information</h3>
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Jomalig, Quezon, Philippines</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-phone"></i>
-                    <span>(042) 555-0123</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>portal@jnhs.edu.ph</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-clock"></i>
-                    <span>Monday - Friday, 7:00 AM - 5:00 PM</span>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-id-card"></i>
-                    <span>School ID: 301366</span>
-                </div>
+                <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span>Jomalig, Quezon, Philippines</span></div>
+                <div class="contact-item"><i class="fas fa-phone"></i><span>(042) 555-0123</span></div>
+                <div class="contact-item"><i class="fas fa-envelope"></i><span>portal@jnhs.edu.ph</span></div>
+                <div class="contact-item"><i class="fas fa-clock"></i><span>Monday - Friday, 7:00 AM - 5:00 PM</span></div>
+                <div class="contact-item"><i class="fas fa-id-card"></i><span>School ID: 301366</span></div>
                 <div class="social-links">
                     <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
@@ -450,21 +411,10 @@
             <div class="contact-form-card">
                 <h3>Send us a Message</h3>
                 <form onsubmit="event.preventDefault(); alert('Message sent! We will get back to you soon.');">
-                    <div class="form-group">
-                        <label>Your Name</label>
-                        <input type="text" placeholder="Enter your name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Message</label>
-                        <textarea placeholder="How can we help you?" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;border-radius:8px;background:linear-gradient(135deg,#e91e63,#c2185b);color:#fff;border:none;font-weight:600;cursor:pointer;">
-                        <i class="fas fa-paper-plane" style="margin-right:8px;"></i>Send Message
-                    </button>
+                    <div class="form-group"><label>Your Name</label><input type="text" placeholder="Enter your name" required></div>
+                    <div class="form-group"><label>Email Address</label><input type="email" placeholder="Enter your email" required></div>
+                    <div class="form-group"><label>Message</label><textarea placeholder="How can we help you?" required></textarea></div>
+                    <button type="submit" class="btn btn-hero-primary" style="width:100%;padding:12px;border-radius:8px;"><i class="fas fa-paper-plane" style="margin-right:8px;"></i>Send Message</button>
                 </form>
             </div>
         </div>
@@ -520,7 +470,7 @@
     </footer>
 
     <script>
-        // Smooth scroll for anchor links
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -529,13 +479,11 @@
             });
         });
 
-        // Scroll spy - highlight active nav link based on scroll position
+        // Scroll spy
         const sections = document.querySelectorAll('section[id]');
         const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-
         function updateActiveNav() {
             const scrollY = window.scrollY + 100;
-
             let currentSection = '';
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;
@@ -544,17 +492,61 @@
                     currentSection = section.getAttribute('id');
                 }
             });
-
             navLinks.forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('href') === '#' + currentSection) {
-                    link.classList.add('active');
-                }
+                if (link.getAttribute('href') === '#' + currentSection) link.classList.add('active');
             });
         }
-
         window.addEventListener('scroll', updateActiveNav);
         window.addEventListener('load', updateActiveNav);
+
+        // Animated particles
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const PARTICLE_COUNT = 40;
+        const colors = ['rgba(233,30,99,0.25)', 'rgba(0,229,255,0.25)', 'rgba(124,77,255,0.25)', 'rgba(233,30,99,0.15)', 'rgba(0,229,255,0.15)'];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 3 + 2,
+                dx: (Math.random() - 0.5) * 0.5,
+                dy: (Math.random() - 0.5) * 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+            };
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(createParticle());
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+            });
+            requestAnimationFrame(drawParticles);
+        }
+
+        resizeCanvas();
+        initParticles();
+        drawParticles();
+        window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
     </script>
 </body>
 </html>

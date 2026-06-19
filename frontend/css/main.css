@@ -45,6 +45,46 @@
     --shadow-glow-purple: 0 0 20px rgba(124, 77, 255, 0.3);
 }
 
+[data-theme="light"] {
+    --bg-body: #f5f7fa;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f0f2f5;
+    --bg-sidebar: #ffffff;
+    --bg-input: #f0f4f8;
+    --bg-topbar: #ffffff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #5a6072;
+    --text-muted: #9098b0;
+    --border-color: #e2e8f0;
+    --border-glow: rgba(100, 120, 160, 0.15);
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --shadow-glow-pink: 0 0 15px rgba(233, 30, 99, 0.15);
+    --shadow-glow-cyan: 0 0 15px rgba(0, 229, 255, 0.15);
+    --shadow-glow-purple: 0 0 15px rgba(124, 77, 255, 0.15);
+}
+
+[data-theme="light"] .sidebar { background: var(--bg-sidebar); border-right-color: var(--border-color); }
+[data-theme="light"] .sidebar-header { border-bottom-color: var(--border-color); }
+[data-theme="light"] .nav-item:hover { background: rgba(0, 229, 255, 0.06); }
+[data-theme="light"] .nav-item.active { background: linear-gradient(90deg, rgba(233, 30, 99, 0.08), transparent); }
+[data-theme="light"] th { background: rgba(0, 0, 0, 0.03); }
+[data-theme="light"] tr:hover { background: rgba(0, 229, 255, 0.03); }
+[data-theme="light"] .modal-content { box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15); }
+[data-theme="light"] .notif-panel { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12); }
+[data-theme="light"] .notification { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); }
+[data-theme="light"] .sidebar-footer { border-top-color: var(--border-color); }
+[data-theme="light"] .topbar { backdrop-filter: blur(10px); background: rgba(255,255,255,0.92); }
+
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+    background: var(--bg-input); border: 1px solid var(--border-color);
+    color: var(--text-secondary); width: 36px; height: 36px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: var(--transition); font-size: 0.9rem;
+}
+.theme-toggle:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,229,255,0.05); }
+[data-theme="light"] .theme-toggle:hover { background: rgba(0,229,255,0.08); }
+
 * {
     margin: 0;
     padding: 0;
