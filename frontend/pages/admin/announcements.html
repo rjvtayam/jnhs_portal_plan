@@ -115,7 +115,7 @@
         }
 
         async function deleteAnnouncement(id) {
-            if (!confirm('Delete this announcement?')) return;
+            if (!(await showConfirmModal('Delete this announcement?', { title: 'Delete Announcement' }))) return;
             try {
                 await api.delete(`/announcements/${id}`);
                 showNotification('Announcement deleted');

@@ -160,7 +160,7 @@
         }
 
         async function deleteTeacher(id) {
-            if (!confirm('Are you sure you want to delete this teacher?')) return;
+            if (!(await showConfirmModal('Are you sure you want to delete this teacher?', { title: 'Delete Teacher' }))) return;
             try {
                 await api.delete(`/teachers/${id}`);
                 showNotification('Teacher deleted');

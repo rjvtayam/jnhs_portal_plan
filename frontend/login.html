@@ -84,12 +84,6 @@
             content: ''; flex: 1; height: 1px; background: #e2e8f0;
         }
 
-        #loginError {
-            color: #e53935; margin-bottom: 15px; display: none; font-size: 0.85rem;
-            background: rgba(229,57,53,0.08); padding: 10px 14px; border-radius: 8px;
-            border: 1px solid rgba(229,57,53,0.2);
-        }
-
         .login-footer {
             text-align: center; font-size: 0.75rem; color: #8892b0;
         }
@@ -133,7 +127,6 @@
                             </button>
                         </div>
                     </div>
-                    <div id="loginError" style="display: none;"></div>
                     <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i>Sign In</button>
                 </form>
                 <div class="divider">JNHS Portal v1.0</div>
@@ -141,9 +134,23 @@
             </div>
         </div>
     </div>
+    <div class="toast-container" id="toastContainer"></div>
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
     <script>
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || icons.info} toast-icon"></i>
+                <span class="toast-msg">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.classList.add('removing'); setTimeout(() => this.parentElement.remove(), 300);">&times;</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.add('removing'); setTimeout(() => toast.remove(), 300); }, 5000);
+        }
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
@@ -174,11 +181,14 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const errorEl = document.getElementById('loginError');
-            errorEl.style.display = 'none';
 
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showToast('Please enter both username and password', 'warning');
+                return;
+            }
 
             try {
                 const result = await api.post('/auth/login', { username, password });
@@ -198,8 +208,7 @@
                     window.location.href = redirects[result.user.role] || '/pages/admin/dashboard.html';
                 }
             } catch (err) {
-                errorEl.textContent = err.message || 'Invalid credentials';
-                errorEl.style.display = 'block';
+                showToast(err.message || 'Invalid username or password', 'error');
             }
         });
 

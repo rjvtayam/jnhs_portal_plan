@@ -1035,6 +1035,83 @@ textarea.form-control {
     border-bottom: 1px solid var(--border-color); font-size: 0.82rem; color: var(--text-secondary);
 }
 
+/* ===== CUSTOM CONFIRM MODAL ===== */
+.confirm-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000; opacity: 0; visibility: hidden; transition: all 0.25s ease;
+}
+.confirm-overlay.show { opacity: 1; visibility: visible; }
+.confirm-box {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); padding: 32px; width: 90%; max-width: 400px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+    transform: scale(0.9) translateY(10px); transition: transform 0.25s ease;
+    text-align: center;
+}
+.confirm-overlay.show .confirm-box { transform: scale(1) translateY(0); }
+.confirm-icon {
+    width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.confirm-icon.danger { background: rgba(255, 82, 82, 0.12); color: var(--danger); }
+.confirm-icon.warning { background: rgba(255, 193, 7, 0.12); color: var(--warning); }
+.confirm-icon.info { background: rgba(0, 229, 255, 0.12); color: var(--neon-cyan); }
+.confirm-title {
+    font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;
+}
+.confirm-message {
+    font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.5;
+}
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.confirm-btn {
+    padding: 10px 28px; border-radius: var(--radius-sm); font-size: 0.88rem;
+    font-weight: 600; cursor: pointer; transition: var(--transition); border: none;
+    font-family: inherit;
+}
+.confirm-btn.cancel {
+    background: var(--bg-input); color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.confirm-btn.cancel:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.confirm-btn.danger { background: var(--danger); color: white; }
+.confirm-btn.danger:hover { background: #e53935; transform: translateY(-1px); }
+.confirm-btn.warning { background: var(--warning); color: #1a1a2e; }
+.confirm-btn.warning:hover { background: #ffca28; transform: translateY(-1px); }
+
+/* ===== FLASH / TOAST MESSAGES ===== */
+.toast-container {
+    position: fixed; top: 20px; right: 20px; z-index: 11000;
+    display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.toast {
+    pointer-events: auto; padding: 14px 20px; border-radius: var(--radius);
+    display: flex; align-items: center; gap: 10px; min-width: 300px; max-width: 420px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); animation: toastIn 0.35s ease;
+    backdrop-filter: blur(10px); font-size: 0.88rem; font-weight: 500;
+}
+.toast.removing { animation: toastOut 0.3s ease forwards; }
+.toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+.toast-body { flex: 1; }
+.toast-msg { color: inherit; }
+.toast-close {
+    background: none; border: none; color: inherit; opacity: 0.6; cursor: pointer;
+    font-size: 1.1rem; padding: 2px; transition: opacity 0.2s; flex-shrink: 0;
+}
+.toast-close:hover { opacity: 1; }
+.toast-success { background: rgba(0, 230, 118, 0.12); color: #00c853; border: 1px solid rgba(0, 230, 118, 0.25); }
+.toast-error { background: rgba(255, 82, 82, 0.12); color: #ff5252; border: 1px solid rgba(255, 82, 82, 0.25); }
+.toast-warning { background: rgba(255, 193, 7, 0.12); color: #f57c00; border: 1px solid rgba(255, 193, 7, 0.25); }
+.toast-info { background: rgba(0, 229, 255, 0.12); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.25); }
+[data-theme="light"] .toast-success { background: rgba(0, 200, 83, 0.1); color: #2e7d32; border-color: rgba(0, 200, 83, 0.2); }
+[data-theme="light"] .toast-error { background: rgba(211, 47, 47, 0.08); color: #c62828; border-color: rgba(211, 47, 47, 0.15); }
+[data-theme="light"] .toast-warning { background: rgba(245, 124, 0, 0.08); color: #e65100; border-color: rgba(245, 124, 0, 0.15); }
+[data-theme="light"] .toast-info { background: rgba(0, 176, 255, 0.08); color: #0277bd; border-color: rgba(0, 176, 255, 0.15); }
+
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toastOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .sidebar {

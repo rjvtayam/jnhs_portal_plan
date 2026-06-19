@@ -131,7 +131,7 @@
         }
 
         async function deleteNotif(id) {
-            if (!confirm('Delete this notification?')) return;
+            if (!(await showConfirmModal('Delete this notification?'))) return;
             try {
                 await api.delete('/notifications/' + id);
                 loadNotifs();
@@ -140,7 +140,7 @@
         }
 
         async function bulkDeleteNotifs() {
-            if (!confirm(`Delete ${selectedIds.size} notification(s)?`)) return;
+            if (!(await showConfirmModal(`Delete ${selectedIds.size} notification(s)?`, { title: 'Bulk Delete', confirmText: 'Delete All' }))) return;
             try {
                 await api.post('/notifications/bulk-delete', { ids: Array.from(selectedIds) });
                 showNotification('Deleted successfully', 'success');

@@ -47,28 +47,94 @@ function debounce(func, wait) {
     };
 }
 
-function showNotification(message, type = 'success') {
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
+// ===== TOAST / FLASH MESSAGES =====
+(function() {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+})();
 
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-    notification.innerHTML = `
-        <i class="fas ${icon}"></i>
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:1.2rem">&times;</button>
+const _toastIcons = {
+    success: 'fa-check-circle',
+    error: 'fa-exclamation-circle',
+    warning: 'fa-exclamation-triangle',
+    info: 'fa-info-circle',
+};
+
+function showNotification(message, type = 'success') {
+    const container = document.querySelector('.toast-container') || (() => {
+        const c = document.createElement('div');
+        c.className = 'toast-container';
+        document.body.appendChild(c);
+        return c;
+    })();
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas ${_toastIcons[type] || _toastIcons.info} toast-icon"></i>
+        <span class="toast-msg">${message}</span>
+        <button class="toast-close" onclick="removeToast(this.parentElement)">&times;</button>
     `;
-    notification.style.cssText = `
-        position: fixed; top: 20px; right: 20px; z-index: 9999;
-        padding: 14px 20px; border-radius: 12px; display: flex; align-items: center; gap: 10px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: slideIn 0.3s ease;
-        background: ${type === 'success' ? 'rgba(0, 230, 118, 0.15)' : type === 'error' ? 'rgba(255, 82, 82, 0.15)' : 'rgba(0, 229, 255, 0.15)'};
-        color: ${type === 'success' ? '#00e676' : type === 'error' ? '#ff5252' : '#00e5ff'};
-        border: 1px solid ${type === 'success' ? 'rgba(0, 230, 118, 0.3)' : type === 'error' ? 'rgba(255, 82, 82, 0.3)' : 'rgba(0, 229, 255, 0.3)'};
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 5000);
+    container.appendChild(toast);
+    setTimeout(() => removeToast(toast), 4000);
+}
+
+function removeToast(el) {
+    if (!el || el.classList.contains('removing')) return;
+    el.classList.add('removing');
+    setTimeout(() => el.remove(), 300);
+}
+
+// ===== CUSTOM CONFIRM MODAL =====
+function showConfirmModal(message, options = {}) {
+    const {
+        title = 'Confirm Delete',
+        confirmText = 'Delete',
+        cancelText = 'Cancel',
+        type = 'danger',
+        icon = type === 'danger' ? 'fa-trash-alt' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-question-circle',
+    } = options;
+
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+            <div class="confirm-box">
+                <div class="confirm-icon ${type}"><i class="fas ${icon}"></i></div>
+                <div class="confirm-title">${title}</div>
+                <div class="confirm-message">${message}</div>
+                <div class="confirm-actions">
+                    <button class="confirm-btn cancel" data-action="cancel">${cancelText}</button>
+                    <button class="confirm-btn ${type}" data-action="confirm">${confirmText}</button>
+                </div>
+            </div>
+        `;
+
+        function cleanup(result) {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 250);
+            resolve(result);
+        }
+
+        overlay.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            if (action === 'cancel' || action === undefined && e.target === overlay) cleanup(false);
+            if (action === 'confirm') cleanup(true);
+        });
+
+        overlay.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cleanup(false);
+            if (e.key === 'Enter') cleanup(true);
+        });
+
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('show'));
+        overlay.querySelector('[data-action="cancel"]').focus();
+    });
 }
 
 function showModal(modalId) {

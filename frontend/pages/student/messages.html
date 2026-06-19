@@ -239,7 +239,7 @@
         }
 
         async function deleteMsg(id) {
-            if (!confirm('Delete this message?')) return;
+            if (!(await showConfirmModal('Delete this message?'))) return;
             try {
                 await api.delete('/messages/' + id);
                 loadMessages();
@@ -248,7 +248,7 @@
         }
 
         async function bulkDeleteMsgs() {
-            if (!confirm(`Delete ${selectedIds.size} message(s)?`)) return;
+            if (!(await showConfirmModal(`Delete ${selectedIds.size} message(s)?`, { title: 'Bulk Delete', confirmText: 'Delete All' }))) return;
             try {
                 await api.post('/messages/bulk-delete', { ids: Array.from(selectedIds) });
                 showNotification('Deleted successfully', 'success');
