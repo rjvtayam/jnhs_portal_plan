@@ -3,11 +3,15 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.announcement import Announcement, Event
 from app.models.user import User
+from app.models.teacher import Teacher
+from app.models.student import Student
+from app.models.parent import Parent, ParentStudent
 from app.schemas.announcement import (
     AnnouncementCreate, AnnouncementUpdate, AnnouncementResponse,
     EventCreate, EventResponse,
 )
 from app.utils.auth import get_current_user, require_role
+from app.routes.notifications import create_notification
 
 router = APIRouter(prefix="/api", tags=["Announcements & Events"])
 
@@ -40,6 +44,34 @@ def create_announcement(
     db.add(new_announcement)
     db.commit()
     db.refresh(new_announcement)
+
+    # Create notifications for target audience
+    audience = announcement.target_audience or "all"
+    role_filter = []
+    if audience == "all":
+        role_filter = ["admin", "principal", "teacher", "student", "parent", "registrar"]
+    elif audience == "teachers":
+        role_filter = ["teacher"]
+    elif audience == "students":
+        role_filter = ["student"]
+    elif audience == "parents":
+        role_filter = ["parent"]
+
+    if role_filter:
+        target_users = db.query(User).filter(User.role.in_(role_filter), User.is_active == True).all()
+        preview = announcement.content[:100] + ("..." if len(announcement.content) > 100 else "")
+        for target_user in target_users:
+            create_notification(
+                db=db,
+                user_id=target_user.id,
+                title=f"New Announcement: {announcement.title}",
+                message=f"{preview}",
+                notif_type="announcement",
+                reference_id=new_announcement.id,
+                reference_type="announcement",
+                link="/pages/{role}/announcements.html".replace("{role}", target_user.role if target_user.role != "super_admin" else "superadmin"),
+            )
+
     return new_announcement
 
 

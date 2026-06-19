@@ -74,6 +74,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/superadmin/users.html" class="nav-item ${activePage === 'system-users' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-users-cog"></i></span> User Management
                 </a>
+                <a href="/pages/superadmin/notifications.html" class="nav-item ${activePage === 'superadmin-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+                </a>
             </div>
         `,
         principal: `
@@ -99,6 +102,9 @@ function renderSidebar(activePage) {
                 <div class="nav-section-title">Communication</div>
                 <a href="/pages/principal/announcements.html" class="nav-item ${activePage === 'principal-announcements' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bullhorn"></i></span> Announcements
+                </a>
+                <a href="/pages/principal/notifications.html" class="nav-item ${activePage === 'principal-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
             </div>
         `,
@@ -139,6 +145,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-user-plus"></i></span> Create Teacher Account
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Communication</div>
+                <a href="/pages/admin/notifications.html" class="nav-item ${activePage === 'admin-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+                </a>
+            </div>
         `,
         registrar: `
             <div class="nav-section">
@@ -171,6 +183,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-user-plus"></i></span> Create Accounts
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Communication</div>
+                <a href="/pages/registrar/notifications.html" class="nav-item ${activePage === 'registrar-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+                </a>
+            </div>
         `,
         teacher: `
             <div class="nav-section">
@@ -189,6 +207,12 @@ function renderSidebar(activePage) {
                 </a>
                 <a href="/pages/teacher/attendance.html" class="nav-item ${activePage === 'attendance' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-check-double"></i></span> Attendance
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Communication</div>
+                <a href="/pages/teacher/notifications.html" class="nav-item ${activePage === 'teacher-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
             </div>
         `,
@@ -210,6 +234,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/student/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
                 </a>
+                <a href="/pages/student/notifications.html" class="nav-item ${activePage === 'student-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+                </a>
             </div>
         `,
         parent: `
@@ -222,7 +249,10 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-chart-line"></i></span> Child Progress
                 </a>
                 <a href="/pages/parent/announcements.html" class="nav-item ${activePage === 'announcements' ? 'active' : ''}">
-                    <span class="icon"><i class="fas fa-bell"></i></span> Announcements
+                    <span class="icon"><i class="fas fa-bullhorn"></i></span> Announcements
+                </a>
+                <a href="/pages/parent/notifications.html" class="nav-item ${activePage === 'parent-notifications' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
             </div>
         `,
@@ -260,4 +290,174 @@ function initDashboard(activePage) {
     if (userInfo) {
         userInfo.innerHTML = `<i class="fas fa-user-circle" style="margin-right:6px;"></i>${user.username} (${capitalize(user.role)})`;
     }
+
+    // Inject notification bell into topbar-actions
+    const topbarActions = document.querySelector('.topbar-actions');
+    if (topbarActions && !document.querySelector('.notif-wrapper')) {
+        const rolePath = user.role === 'super_admin' ? 'superadmin' : user.role;
+        const bellHtml = `
+            <div class="notif-wrapper">
+                <button class="notif-bell" onclick="toggleNotifPanel(event)" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                </button>
+                <div class="notif-panel" id="notifPanel">
+                    <div class="notif-panel-header">
+                        <h4>Notifications</h4>
+                        <button onclick="markAllNotifRead(event)">Mark all read</button>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <div class="notif-empty">No notifications yet</div>
+                    </div>
+                    <a href="/pages/${rolePath}/notifications.html" class="notif-view-all">View All Notifications</a>
+                </div>
+            </div>
+        `;
+        topbarActions.insertAdjacentHTML('afterbegin', bellHtml);
+    }
+
+    // Start notification polling
+    startNotifPolling();
 }
+
+// ===== NOTIFICATION SYSTEM =====
+
+let _notifPollInterval = null;
+let _notifRecentInterval = null;
+
+function toggleNotifPanel(e) {
+    if (e) e.stopPropagation();
+    const panel = document.getElementById('notifPanel');
+    if (!panel) return;
+    const isOpen = panel.classList.contains('show');
+    panel.classList.toggle('show');
+    if (!isOpen) {
+        fetchRecentNotifications();
+        document.addEventListener('click', closeNotifPanel);
+    }
+}
+
+function closeNotifPanel(e) {
+    const panel = document.getElementById('notifPanel');
+    const wrapper = document.querySelector('.notif-wrapper');
+    if (panel && wrapper && !wrapper.contains(e.target)) {
+        panel.classList.remove('show');
+        document.removeEventListener('click', closeNotifPanel);
+    }
+}
+
+const notifTypeIcons = {
+    announcement: 'fa-bullhorn',
+    grade: 'fa-star',
+    enrollment: 'fa-user-plus',
+    attendance: 'fa-calendar-check',
+    account: 'fa-user-circle',
+    message: 'fa-envelope',
+    system: 'fa-cog',
+};
+
+function renderNotifItem(n) {
+    const icon = notifTypeIcons[n.type] || 'fa-bell';
+    const timeAgo = getTimeAgo(n.created_at);
+    return `
+        <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick(${n.id}, '${n.link || ''}')" data-notif-id="${n.id}">
+            <div class="notif-item-icon ${n.type}"><i class="fas ${icon}"></i></div>
+            <div class="notif-item-body">
+                <div class="notif-item-title">${n.title}</div>
+                <div class="notif-item-msg">${n.message}</div>
+                <div class="notif-item-time">${timeAgo}</div>
+            </div>
+        </div>
+    `;
+}
+
+function getTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    const now = new Date();
+    const date = new Date(dateStr);
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return formatDate(dateStr);
+}
+
+async function fetchUnreadCount() {
+    try {
+        const data = await api.get('/notifications/unread-count');
+        if (data === null) return;
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (data.count > 0) {
+                badge.textContent = data.count > 99 ? '99+' : data.count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (err) {
+        console.error('Failed to fetch unread count:', err);
+    }
+}
+
+async function fetchRecentNotifications() {
+    try {
+        const notifs = await api.get('/notifications?limit=10');
+        if (notifs === null) return;
+        const list = document.getElementById('notifList');
+        if (!list) return;
+        if (notifs.length === 0) {
+            list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+        } else {
+            list.innerHTML = notifs.map(renderNotifItem).join('');
+        }
+    } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+    }
+}
+
+async function handleNotifClick(notifId, link) {
+    try {
+        await api.put(`/notifications/${notifId}/read`);
+        const item = document.querySelector(`[data-notif-id="${notifId}"]`);
+        if (item) item.classList.remove('unread');
+        fetchUnreadCount();
+        if (link) {
+            window.location.href = link;
+        }
+    } catch (err) {
+        console.error('Failed to mark notification read:', err);
+    }
+}
+
+async function markAllNotifRead(e) {
+    if (e) e.stopPropagation();
+    try {
+        await api.put('/notifications/read-all');
+        document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+        fetchUnreadCount();
+    } catch (err) {
+        console.error('Failed to mark all read:', err);
+    }
+}
+
+function startNotifPolling() {
+    stopNotifPolling();
+    fetchUnreadCount();
+    fetchRecentNotifications();
+    _notifPollInterval = setInterval(fetchUnreadCount, 30000);
+    _notifRecentInterval = setInterval(fetchRecentNotifications, 30000);
+}
+
+function stopNotifPolling() {
+    if (_notifPollInterval) clearInterval(_notifPollInterval);
+    if (_notifRecentInterval) clearInterval(_notifRecentInterval);
+    _notifPollInterval = null;
+    _notifRecentInterval = null;
+}
+
+window.addEventListener('beforeunload', stopNotifPolling);

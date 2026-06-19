@@ -12,6 +12,7 @@ from app.routes.registrar import router as registrar_router
 from app.routes.student_portal import router as student_portal_router
 from app.routes.parent_portal import router as parent_portal_router
 from app.routes.teacher_portal import router as teacher_portal_router
+from app.routes.notifications import router as notifications_router
 
 __all__ = [
     "auth_router",
@@ -28,4 +29,5 @@ __all__ = [
     "student_portal_router",
     "parent_portal_router",
     "teacher_portal_router",
+    "notifications_router",
 ]

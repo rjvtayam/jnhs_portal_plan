@@ -6,9 +6,11 @@ from app.models.grade import Grade
 from app.models.student import Student
 from app.models.section import Subject
 from app.models.user import User
+from app.models.parent import Parent, ParentStudent
 from app.schemas.grade import GradeInput, GradeUpdate, GradeResponse
 from app.services.grading_service import compute_quarterly_grade
 from app.utils.auth import get_current_user, require_role
+from app.routes.notifications import create_notification
 
 router = APIRouter(prefix="/api/grades", tags=["Grades"])
 
@@ -97,7 +99,43 @@ def create_grade(
     db.add(new_grade)
     db.commit()
     db.refresh(new_grade)
+
+    # Notify student + parents
+    _notify_grade(db, new_grade, subject, user)
+
     return new_grade
+
+
+def _notify_grade(db, grade, subject, encoded_by_user):
+    student = db.query(Student).filter(Student.id == grade.student_id).first()
+    if not student:
+        return
+    subject_name = subject.name if subject else "Unknown Subject"
+    if student.user_id:
+        create_notification(
+            db=db,
+            user_id=student.user_id,
+            title=f"Grade Encoded: {subject.code if subject else ''}",
+            message=f"Your {grade.quarter} grade for {subject_name} has been recorded. Transmuted Grade: {grade.transmuted_grade}",
+            notif_type="grade",
+            reference_id=grade.id,
+            reference_type="grade",
+            link="/pages/student/grades.html",
+        )
+    parent_links = db.query(ParentStudent).filter(ParentStudent.student_id == student.id).all()
+    for pl in parent_links:
+        parent = db.query(Parent).filter(Parent.id == pl.parent_id).first()
+        if parent and parent.user_id:
+            create_notification(
+                db=db,
+                user_id=parent.user_id,
+                title=f"Grade: {student.first_name} {student.last_name}",
+                message=f"{student.first_name}'s {grade.quarter} grade for {subject_name} has been recorded. Transmuted Grade: {grade.transmuted_grade}",
+                notif_type="grade",
+                reference_id=grade.id,
+                reference_type="grade",
+                link="/pages/parent/child-progress.html",
+            )
 
 
 @router.post("/bulk", response_model=List[GradeResponse])
@@ -170,6 +208,7 @@ def bulk_create_grades(
             db.commit()
             db.refresh(new_grade)
             saved.append(new_grade)
+            _notify_grade(db, new_grade, subject, user)
     return saved
 
 
@@ -208,4 +247,8 @@ def update_grade(
 
     db.commit()
     db.refresh(grade)
+
+    # Notify student + parents of update
+    _notify_grade(db, grade, subject, user)
+
     return grade

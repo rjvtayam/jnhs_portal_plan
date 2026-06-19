@@ -4,6 +4,7 @@ from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest
 from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user, require_role
+from app.routes.notifications import create_notification
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -36,6 +37,17 @@ def register(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Notify the new user
+    create_notification(
+        db=db,
+        user_id=new_user.id,
+        title="Account Created",
+        message=f"Your {user.role} account has been created. Username: {user.username}",
+        notif_type="account",
+        link="/login.html",
+    )
+
     return new_user
 
 

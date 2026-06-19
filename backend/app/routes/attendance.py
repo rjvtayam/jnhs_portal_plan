@@ -4,8 +4,11 @@ from datetime import date
 from app.database import get_db
 from app.models.attendance import Attendance
 from app.models.user import User
+from app.models.student import Student
+from app.models.parent import Parent, ParentStudent
 from app.schemas.attendance import AttendanceInput, AttendanceUpdate, AttendanceResponse, BulkAttendanceInput
 from app.utils.auth import get_current_user, require_role
+from app.routes.notifications import create_notification
 
 router = APIRouter(prefix="/api/attendance", tags=["Attendance"])
 
@@ -60,6 +63,11 @@ def record_attendance(
     db.add(new_attendance)
     db.commit()
     db.refresh(new_attendance)
+
+    # Notify parents if absent or late
+    if attendance.status in ("absent", "late"):
+        _notify_absence(db, attendance.student_id, attendance.status, attendance.date)
+
     return new_attendance
 
 
@@ -86,7 +94,32 @@ def bulk_record_attendance(
     db.commit()
     for r in records:
         db.refresh(r)
+
+    # Notify parents for absent/late students
+    for record in bulk.records:
+        if record.get("status") in ("absent", "late"):
+            _notify_absence(db, record["student_id"], record["status"], bulk.date)
+
     return records
+
+
+def _notify_absence(db, student_id, status, att_date):
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        return
+    parent_links = db.query(ParentStudent).filter(ParentStudent.student_id == student_id).all()
+    for pl in parent_links:
+        parent = db.query(Parent).filter(Parent.id == pl.parent_id).first()
+        if parent and parent.user_id:
+            create_notification(
+                db=db,
+                user_id=parent.user_id,
+                title=f"Attendance Notice: {student.first_name} {student.last_name}",
+                message=f"{student.first_name} was marked {status} on {att_date}.",
+                notif_type="attendance",
+                reference_type="attendance",
+                link="/pages/parent/child-progress.html",
+            )
 
 
 @router.put("/{attendance_id}", response_model=AttendanceResponse)

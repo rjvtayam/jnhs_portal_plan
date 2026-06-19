@@ -5,8 +5,10 @@ from app.models.enrollment import Enrollment
 from app.models.student import Student
 from app.models.section import Section
 from app.models.user import User
+from app.models.parent import Parent, ParentStudent
 from app.schemas.enrollment import EnrollmentCreate, EnrollmentUpdate, EnrollmentResponse
 from app.utils.auth import get_current_user, require_role
+from app.routes.notifications import create_notification
 
 router = APIRouter(prefix="/api/enrollment", tags=["Enrollment"])
 
@@ -52,6 +54,36 @@ def enroll_student(
     db.add(new_enrollment)
     db.commit()
     db.refresh(new_enrollment)
+
+    # Notify student
+    if student.user_id:
+        create_notification(
+            db=db,
+            user_id=student.user_id,
+            title="Enrollment Confirmation",
+            message=f"You have been enrolled in {section.name} for SY {enrollment.school_year}.",
+            notif_type="enrollment",
+            reference_id=new_enrollment.id,
+            reference_type="enrollment",
+            link="/pages/student/dashboard.html",
+        )
+
+    # Notify linked parents
+    parent_links = db.query(ParentStudent).filter(ParentStudent.student_id == student.id).all()
+    for pl in parent_links:
+        parent = db.query(Parent).filter(Parent.id == pl.parent_id).first()
+        if parent and parent.user_id:
+            create_notification(
+                db=db,
+                user_id=parent.user_id,
+                title=f"Enrollment: {student.first_name} {student.last_name}",
+                message=f"{student.first_name} has been enrolled in {section.name} for SY {enrollment.school_year}.",
+                notif_type="enrollment",
+                reference_id=new_enrollment.id,
+                reference_type="enrollment",
+                link="/pages/parent/dashboard.html",
+            )
+
     return new_enrollment
 
 

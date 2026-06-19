@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Notifications</h1>
+                    <p>Student Portal</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="notif-tabs" id="notifTabs">
+                    <button class="notif-tab active" data-filter="all" onclick="filterNotifs('all', this)">All</button>
+                    <button class="notif-tab" data-filter="unread" onclick="filterNotifs('unread', this)">Unread</button>
+                </div>
+                <div class="card">
+                    <div class="card-body" id="notifListFull">
+                        <p class="text-secondary">Loading notifications...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('student-notifications');
+        let currentFilter = 'all';
+        let allNotifs = [];
+
+        async function loadNotifs() {
+            try {
+                allNotifs = await api.get('/notifications?limit=200') || [];
+                renderNotifs();
+            } catch (err) {
+                document.getElementById('notifListFull').innerHTML = '<p class="text-danger">Failed to load notifications</p>';
+            }
+        }
+
+        function renderNotifs() {
+            const filtered = currentFilter === 'unread' ? allNotifs.filter(n => !n.is_read) : allNotifs;
+            const container = document.getElementById('notifListFull');
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No notifications</h3><p>You\'re all caught up!</p></div>';
+                return;
+            }
+            container.innerHTML = filtered.map(n => {
+                const icon = notifTypeIcons[n.type] || 'fa-bell';
+                const timeAgo = getTimeAgo(n.created_at);
+                return `
+                    <div class="notif-page-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick(${n.id}, '${n.link || ''}')">
+                        <div class="notif-item-icon ${n.type}"><i class="fas ${icon}"></i></div>
+                        <div class="notif-item-body">
+                            <div class="notif-item-title">${n.title}</div>
+                            <div class="notif-item-msg" style="white-space:normal;">${n.message}</div>
+                            <div class="notif-item-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterNotifs(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            renderNotifs();
+        }
+
+        loadNotifs();
+    </script>
+</body>
+</html>
