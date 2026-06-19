@@ -9,6 +9,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon_io/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon_io/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .bg-card { background: var(--bg-card); }
+        .bg-input { background: var(--bg-input); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .border-theme { border-color: var(--border-color); }
+        .status-active { background: rgba(0,230,118,0.15); color: var(--success); }
+        .status-pending { background: rgba(255,193,7,0.15); color: var(--warning); }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -62,19 +72,19 @@
                     <div class="card-body">
                         <table style="width:100%;border-collapse:collapse;">
                             <thead>
-                                <tr style="background:#f7fafc;">
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Student</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">LRN</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Grade</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Section</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">SY</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Status</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Date</th>
-                                    <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Actions</th>
+                                <tr style="background:var(--bg-card);">
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Student</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">LRN</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Grade</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Section</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">SY</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Status</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Date</th>
+                                    <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border-color);">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="enrollmentsBody">
-                                <tr><td colspan="8" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                                <tr><td colspan="8" style="padding:20px;text-align:center;" class="text-secondary">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -148,20 +158,20 @@
                 if (status) filtered = filtered.filter(e => e.status === status);
 
                 if (!filtered || filtered.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#718096;">No enrollments found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;" class="text-secondary">No enrollments found</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = filtered.map(e => `
                     <tr>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.student_name || '-'}</td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.lrn || '-'}</td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.grade_level || '-'}</td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.section_name || '-'}</td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.school_year || '-'}</td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><span style="padding:3px 10px;border-radius:12px;font-size:0.85rem;background:${e.status==='enrolled'?'#c6f6d5':'#fed7d7'};color:${e.status==='enrolled'?'#276749':'#9b2c2c'};">${e.status}</span></td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${e.date_enrolled ? formatDate(e.date_enrolled) : '-'}</td>
-                        <td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);">${e.student_name || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);">${e.lrn || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);">${e.grade_level || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);">${e.section_name || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);">${e.school_year || '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);"><span style="padding:3px 10px;border-radius:12px;font-size:0.85rem;" class="${e.status==='enrolled'?'status-active':'status-pending'}">${e.status}</span></td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);">${e.date_enrolled ? formatDate(e.date_enrolled) : '-'}</td>
+                        <td style="padding:10px;border-bottom:1px solid var(--border-color);text-align:center;">
                             ${e.status === 'enrolled' ? `<button class="btn btn-sm btn-outline" onclick="updateStatus(${e.id},'dropped')">Drop</button>` : ''}
                         </td>
                     </tr>

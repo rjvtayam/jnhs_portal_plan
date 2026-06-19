@@ -81,25 +81,37 @@
         </main>
     </div>
 
-    <div class="modal-overlay" id="enrollModal">
-        <div class="modal">
+    <div class="modal" id="enrollModal">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>Enroll Student</h3>
-                <button onclick="hideModal('enrollModal')" style="background:none;border:none;font-size:1.5rem;cursor:pointer">&times;</button>
+                <button class="modal-close" onclick="hideModal('enrollModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="enrollForm">
                     <div class="form-group">
                         <label>Search Student *</label>
                         <input type="text" class="form-control" id="studentSearch" placeholder="Enter LRN or name..." oninput="searchStudentsForEnroll()">
-                        <div id="studentResults" style="max-height:150px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:4px;margin-top:5px;display:none;"></div>
+                        <div id="studentResults" style="max-height:150px;overflow-y:auto;border:1px solid var(--border-color);border-radius:4px;margin-top:5px;display:none;"></div>
                         <input type="hidden" id="selectedStudentId">
                     </div>
-                    <div id="selectedStudentInfo" style="display:none;background:#f7fafc;padding:10px;border-radius:4px;margin-bottom:15px;"></div>
+                    <div id="selectedStudentInfo" style="display:none;background:var(--bg-input);padding:10px;border-radius:4px;margin-bottom:15px;"></div>
+                    <div class="form-group">
+                        <label>Grade Level *</label>
+                        <select class="form-control" id="enrollGradeLevel" required onchange="loadSectionsForGrade()">
+                            <option value="">Select Grade</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label>Section *</label>
                         <select class="form-control" id="enrollSection" required>
-                            <option value="">Select Section</option>
+                            <option value="">Select grade level first</option>
                         </select>
                     </div>
                     <div class="grid-2">
@@ -194,7 +206,7 @@
                     <div style="padding:8px;cursor:pointer;border-bottom:1px solid #e2e8f0;" onclick="selectStudent(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}')">
                         <strong>${s.lrn}</strong> - ${s.last_name}, ${s.first_name}
                     </div>
-                `).join('') || '<div style="padding:8px;color:#718096;">No students found</div>';
+                `).join('') || '<div style="padding:8px;color:var(--text-secondary);">No students found</div>';
             } catch (err) {
                 console.error(err);
             }
@@ -206,6 +218,26 @@
             document.getElementById('studentResults').style.display = 'none';
             document.getElementById('selectedStudentInfo').style.display = 'block';
             document.getElementById('selectedStudentInfo').innerHTML = `<strong>${name}</strong> (LRN: ${lrn})`;
+        }
+
+        async function loadSectionsForGrade() {
+            const gradeLevel = document.getElementById('enrollGradeLevel').value;
+            const select = document.getElementById('enrollSection');
+            if (!gradeLevel) {
+                select.innerHTML = '<option value="">Select grade level first</option>';
+                return;
+            }
+            try {
+                const sections = await api.get('/registrar/sections');
+                const filtered = sections.filter(s => String(s.grade_level) === String(gradeLevel));
+                select.innerHTML = '<option value="">Select Section</option>' +
+                    filtered.map(s => `<option value="${s.id}">${s.name} (${s.enrolled_count}/${s.max_students})</option>`).join('');
+                if (filtered.length === 0) {
+                    select.innerHTML += '<option value="" disabled>No sections available for this grade</option>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         async function loadSections() {

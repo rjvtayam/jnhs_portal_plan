@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest
 from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user, require_role
 from app.routes.notifications import create_notification
+from app.routes.activity import log_activity
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 @router.post("/register", response_model=UserResponse)
 def register(
     user: UserCreate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("super_admin", "admin", "registrar")),
 ):
@@ -48,11 +50,20 @@ def register(
         link="/login.html",
     )
 
+    # Log activity
+    log_activity(
+        db=db, user_id=current_user.id, username=current_user.username, user_role=current_user.role,
+        action="register", category="account",
+        description=f"Created {user.role} account: {user.username}",
+        target_type="user", target_id=new_user.id,
+        ip_address=request.client.host if request.client else None,
+    )
+
     return new_user
 
 
 @router.post("/login", response_model=Token)
-def login(credentials: LoginRequest, db: Session = Depends(get_db)):
+def login(credentials: LoginRequest, request: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == credentials.username).first()
     if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -61,6 +72,14 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Account is deactivated")
 
     token = create_access_token(data={"sub": str(user.id), "role": user.role})
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="login", category="auth",
+        description=f"{user.username} logged in as {user.role}",
+        ip_address=request.client.host if request.client else None,
+    )
+
     return Token(
         access_token=token,
         user=UserResponse.model_validate(user),

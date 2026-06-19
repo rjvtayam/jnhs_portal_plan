@@ -106,8 +106,8 @@
                 selector.innerHTML = children.map(c => `
                     <div class="child-card" onclick="selectChild(${c.id}, this)">
                         <strong>${c.last_name}, ${c.first_name} ${c.middle_name || ''}</strong>
-                        <span style="margin-left:15px;color:#718096;">Grade ${c.grade_level} - ${c.section}</span>
-                        <span style="float:right;color:#718096;">${c.relationship}</span>
+                        <span style="margin-left:15px;color:var(--text-secondary);">Grade ${c.grade_level} - ${c.section}</span>
+                        <span style="float:right;color:var(--text-secondary);">${c.relationship}</span>
                     </div>
                 `).join('');
             } catch (err) {
@@ -140,7 +140,7 @@
                 });
 
                 let html = '<table style="width:100%;border-collapse:collapse;">';
-                html += '<tr style="background:#f7fafc;"><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th>';
+                html += '<tr style="background:var(--bg-input);"><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th>';
                 ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
                     html += `<th style="padding:8px;border-bottom:1px solid #e2e8f0;">${q}</th>`;
                 });

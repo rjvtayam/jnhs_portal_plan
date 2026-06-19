@@ -141,10 +141,10 @@
                 card.style.display = 'block';
 
                 tbody.innerHTML = grades.map((g, i) => `
-                    <tr style="background:${i % 2 === 0 ? 'white' : '#f7fafc'};">
+                    <tr style="background:${i % 2 === 0 ? 'var(--bg-card)' : 'transparent'};">
                         <td style="padding:8px;border-bottom:1px solid #e2e8f0;font-weight:500;">
                             ${g.student_name}<br>
-                            <span style="font-size:0.8rem;color:#718096;">${g.lrn}</span>
+                            <span style="font-size:0.8rem;color:var(--text-secondary);">${g.lrn}</span>
                         </td>
                         <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">
                             <input type="number" class="grade-input" data-student="${g.student_id}" data-field="ww_score" value="${g.ww_score || ''}" min="0" onchange="computeRow(this)">

@@ -112,7 +112,7 @@
                             <span class="badge badge-${a.priority === 'urgent' ? 'danger' : a.priority === 'high' ? 'warning' : 'info'}">${a.priority}</span>
                         </div>
                         <p style="font-size:0.85rem;color:#4a5568;margin:8px 0;white-space:pre-line;">${a.content}</p>
-                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:#718096;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);">
                             <span>Target: ${a.target_audience}</span>
                             <span>${formatDateTime(a.created_at)}</span>
                         </div>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.enrollment import Enrollment
@@ -9,6 +9,7 @@ from app.models.parent import Parent, ParentStudent
 from app.schemas.enrollment import EnrollmentCreate, EnrollmentUpdate, EnrollmentResponse
 from app.utils.auth import get_current_user, require_role
 from app.routes.notifications import create_notification
+from app.routes.activity import log_activity
 
 router = APIRouter(prefix="/api/enrollment", tags=["Enrollment"])
 
@@ -31,6 +32,7 @@ def list_enrollments(
 @router.post("/", response_model=EnrollmentResponse)
 def enroll_student(
     enrollment: EnrollmentCreate,
+    request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin", "registrar")),
 ):
@@ -83,6 +85,15 @@ def enroll_student(
                 reference_type="enrollment",
                 link="/pages/parent/dashboard.html",
             )
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="enroll", category="enrollment",
+        description=f"Enrolled {student.first_name} {student.last_name} in {section.name} (SY {enrollment.school_year})",
+        target_type="enrollment", target_id=new_enrollment.id,
+        ip_address=request.client.host if request.client else None,
+        details={"student": student.first_name + " " + student.last_name, "section": section.name, "school_year": enrollment.school_year},
+    )
 
     return new_enrollment
 

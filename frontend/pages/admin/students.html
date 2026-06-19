@@ -56,11 +56,11 @@
     </div>
 
     <!-- Add Student Modal -->
-    <div class="modal-overlay" id="addStudentModal">
-        <div class="modal">
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>Add New Student</h3>
-                <button onclick="hideModal('addStudentModal')" style="background:none;border:none;font-size:1.5rem;cursor:pointer">&times;</button>
+                <button class="modal-close" onclick="hideModal('addStudentModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="addStudentForm">
@@ -155,7 +155,7 @@
                     <td>${s.contact_number || '-'}</td>
                     <td>
                         <button class="btn btn-sm btn-outline" onclick="viewStudent(${s.id})">View</button>
-                        <button class="btn btn-sm btn-outline" style="color:#e53e3e;border-color:#e53e3e;" onclick="deleteStudent(${s.id})">Delete</button>
+                        <button class="btn btn-sm btn-outline" style="color:var(--danger);border-color:var(--danger);" onclick="deleteStudent(${s.id})">Delete</button>
                     </td>
                 </tr>
             `).join('');

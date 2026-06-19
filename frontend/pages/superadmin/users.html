@@ -21,6 +21,14 @@
         .role-teacher { background: rgba(41,121,255,0.2); color: #2979ff; border: 1px solid rgba(41,121,255,0.3); }
         .role-student { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
         .role-parent { background: rgba(255,82,82,0.2); color: #ff5252; border: 1px solid rgba(255,82,82,0.3); }
+        .bg-card { background: var(--bg-card); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .text-neon-cyan { color: var(--neon-cyan); }
+        .text-neon-pink { color: var(--neon-pink); }
+        .border-theme { border-bottom: 1px solid var(--border-color); }
+        .table-cell { padding: 10px; border-bottom: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
@@ -71,16 +79,16 @@
                     <div class="card-body">
                         <table style="width:100%;border-collapse:collapse;">
                             <thead>
-                                <tr style="background:rgba(30,42,74,0.5);">
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #1e2a4a;color:#00e5ff;">Username</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #1e2a4a;color:#00e5ff;">Email</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #1e2a4a;color:#00e5ff;">Role</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #1e2a4a;color:#00e5ff;">Status</th>
-                                    <th style="padding:10px;text-align:center;border-bottom:2px solid #1e2a4a;color:#00e5ff;">Actions</th>
+                                <tr class="bg-card">
+                                    <th class="text-neon-cyan" style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Username</th>
+                                    <th class="text-neon-cyan" style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Email</th>
+                                    <th class="text-neon-cyan" style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Role</th>
+                                    <th class="text-neon-cyan" style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Status</th>
+                                    <th class="text-neon-cyan" style="padding:10px;text-align:center;border-bottom:2px solid var(--border-color);">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="usersBody">
-                                <tr><td colspan="5" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                                <tr><td colspan="5" class="text-secondary" style="padding:20px;text-align:center;">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -157,16 +165,16 @@
         function renderUsers(users) {
             const tbody = document.getElementById('usersBody');
             if (!users || users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#5a6a8a;">No users found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="padding:20px;text-align:center;">No users found</td></tr>';
                 return;
             }
             tbody.innerHTML = users.map(u => `
                 <tr>
-                    <td style="padding:10px;border-bottom:1px solid #1e2a4a;font-weight:500;color:#e0e0e0;">${u.username}</td>
-                    <td style="padding:10px;border-bottom:1px solid #1e2a4a;color:#8892b0;">${u.email || '-'}</td>
-                    <td style="padding:10px;border-bottom:1px solid #1e2a4a;"><span class="role-badge role-${u.role}">${u.role.replace('_', ' ').toUpperCase()}</span></td>
-                    <td style="padding:10px;border-bottom:1px solid #1e2a4a;"><span style="color:${u.is_active ? '#00e5ff' : '#e91e63'};">${u.is_active ? 'Active' : 'Inactive'}</span></td>
-                    <td style="padding:10px;border-bottom:1px solid #1e2a4a;text-align:center;">
+                    <td class="table-cell text-primary" style="font-weight:500;">${u.username}</td>
+                    <td class="table-cell text-secondary">${u.email || '-'}</td>
+                    <td class="table-cell"><span class="role-badge role-${u.role}">${u.role.replace('_', ' ').toUpperCase()}</span></td>
+                    <td class="table-cell"><span class="${u.is_active ? 'text-neon-cyan' : 'text-neon-pink'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+                    <td class="table-cell" style="text-align:center;">
                         <button class="btn btn-sm btn-outline" onclick="resetPassword(${u.id}, '${u.username}')">Reset Password</button>
                     </td>
                 </tr>

@@ -9,6 +9,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon_io/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon_io/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .bg-card { background: var(--bg-card); }
+        .bg-input { background: var(--bg-input); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .border-theme { border-color: var(--border-color); }
+        .status-active { background: rgba(0,230,118,0.15); color: var(--success); }
+        .status-pending { background: rgba(255,193,7,0.15); color: var(--warning); }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -32,17 +42,17 @@
                     <div class="card-body">
                         <table style="width:100%;border-collapse:collapse;">
                             <thead>
-                                <tr style="background:#f7fafc;">
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Name</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Employee ID</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Department</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Specialization</th>
-                                    <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Contact</th>
-                                    <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Actions</th>
+                                <tr style="background:var(--bg-card);">
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Name</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Employee ID</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Department</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Specialization</th>
+                                    <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border-color);">Contact</th>
+                                    <th style="padding:10px;text-align:center;border-bottom:2px solid var(--border-color);">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="teachersBody">
-                                <tr><td colspan="6" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                                <tr><td colspan="6" style="padding:20px;text-align:center;" class="text-secondary">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -117,17 +127,17 @@
         function renderTeachers(teachers) {
             const tbody = document.getElementById('teachersBody');
             if (!teachers || teachers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#718096;">No teachers found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;" class="text-secondary">No teachers found</td></tr>';
                 return;
             }
             tbody.innerHTML = teachers.map(t => `
                 <tr>
-                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:500;">${t.last_name}, ${t.first_name} ${t.middle_name || ''}</td>
-                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${t.employee_id || '-'}</td>
-                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${t.department || '-'}</td>
-                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${t.specialization || '-'}</td>
-                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${t.contact_number || '-'}</td>
-                    <td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">
+                    <td style="padding:10px;border-bottom:1px solid var(--border-color);font-weight:500;" class="text-primary">${t.last_name}, ${t.first_name} ${t.middle_name || ''}</td>
+                    <td style="padding:10px;border-bottom:1px solid var(--border-color);">${t.employee_id || '-'}</td>
+                    <td style="padding:10px;border-bottom:1px solid var(--border-color);">${t.department || '-'}</td>
+                    <td style="padding:10px;border-bottom:1px solid var(--border-color);">${t.specialization || '-'}</td>
+                    <td style="padding:10px;border-bottom:1px solid var(--border-color);">${t.contact_number || '-'}</td>
+                    <td style="padding:10px;border-bottom:1px solid var(--border-color);text-align:center;">
                         <button class="btn btn-sm btn-outline" onclick="deleteTeacher(${t.id})">Delete</button>
                     </td>
                 </tr>

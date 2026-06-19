@@ -9,6 +9,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon_io/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon_io/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .bg-card { background: var(--bg-card); }
+        .bg-input { background: var(--bg-input); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .border-theme { border-color: var(--border-color); }
+        .status-active { background: rgba(0,230,118,0.15); color: var(--success); }
+        .status-pending { background: rgba(255,193,7,0.15); color: var(--warning); }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -41,7 +51,7 @@
                                 <button class="btn btn-primary" style="width:100%" onclick="createTeacherAccount()">Create Teacher Account</button>
                             </div>
                         </div>
-                        <p style="font-size:0.8rem;color:#5a6a8a;margin-top:8px;">
+                        <p class="text-muted" style="font-size:0.8rem;margin-top:8px;">
                             Username = Employee ID | Password = Employee ID
                         </p>
                     </div>
@@ -64,7 +74,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="teachersTable">
-                                    <tr><td colspan="5" style="padding:20px;text-align:center;color:#5a6a8a;">Loading...</td></tr>
+                                    <tr><td colspan="5" style="padding:20px;text-align:center;" class="text-muted">Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -88,18 +98,18 @@
 
                 const tbody = document.getElementById('teachersTable');
                 if (!teachers || teachers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#5a6a8a;">No teachers found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;" class="text-muted">No teachers found</td></tr>';
                     return;
                 }
                 tbody.innerHTML = teachers.map(t => `
                     <tr>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.last_name}, ${t.first_name}</td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.employee_id || '-'}</td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.department || '-'}</td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;">
-                            ${t.user_id ? '<span style="color:#00e676;">Has Account</span>' : '<span style="color:#ffc107;">No Account</span>'}
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);" class="text-primary">${t.last_name}, ${t.first_name}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);" class="text-primary">${t.employee_id || '-'}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);" class="text-primary">${t.department || '-'}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);">
+                            ${t.user_id ? '<span class="status-active">Has Account</span>' : '<span class="status-pending">No Account</span>'}
                         </td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${t.user_id ? t.employee_id : '-'}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);" class="text-primary">${t.user_id ? t.employee_id : '-'}</td>
                     </tr>
                 `).join('');
             } catch (err) {

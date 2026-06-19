@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log - JNHS Portal</title>
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon_io/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon_io/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon_io/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .activity-entry {
+            padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+            display: flex; gap: 12px; align-items: start;
+        }
+        .activity-entry:hover { background: var(--hover-bg); }
+        .activity-icon {
+            width: 36px; height: 36px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;
+        }
+        .activity-icon.login { background: rgba(0,229,255,0.15); color: #00e5ff; }
+        .activity-icon.create { background: rgba(0,230,118,0.15); color: #00e676; }
+        .activity-icon.delete { background: rgba(233,30,99,0.15); color: #e91e63; }
+        .activity-icon.enroll { background: rgba(102,187,106,0.15); color: #66bb6a; }
+        .activity-icon.grade { background: rgba(255,183,77,0.15); color: #ffb74d; }
+        .activity-icon.record { background: rgba(77,182,172,0.15); color: #4db6ac; }
+        .activity-icon.register { background: rgba(124,179,255,0.15); color: #7cb3ff; }
+        .activity-body { flex: 1; }
+        .activity-desc { font-size: 0.9rem; color: var(--text-primary); line-height: 1.4; }
+        .activity-meta { display: flex; gap: 14px; margin-top: 4px; color: var(--text-muted); font-size: 0.78rem; }
+        .activity-meta .role-badge { font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; }
+        .activity-meta .role-badge.super_admin { background: rgba(255,87,34,0.15); color: #ff5722; }
+        .activity-meta .role-badge.admin { background: rgba(33,150,243,0.15); color: #2196f3; }
+        .activity-meta .role-badge.registrar { background: rgba(0,188,212,0.15); color: #00bcd4; }
+        .activity-meta .role-badge.principal { background: rgba(255,152,0,0.15); color: #ff9800; }
+        .activity-meta .role-badge.teacher { background: rgba(139,195,74,0.15); color: #8bc34a; }
+        .activity-meta .role-badge.student { background: rgba(156,39,176,0.15); color: #9c27b0; }
+        .activity-meta .role-badge.parent { background: rgba(233,30,99,0.15); color: #e91e63; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.4; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Activity Log</h1>
+                    <p>Track all user actions across the portal</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-info"></span>
+                    <button class="btn btn-sm btn-outline" onclick="loadLogs()">Refresh</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-list"></i></div>
+                        <div class="stat-info">
+                            <h4 id="totalActivities">0</h4>
+                            <p>Total Activities</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon cyan"><i class="fas fa-calendar-day"></i></div>
+                        <div class="stat-info">
+                            <h4 id="todayCount">0</h4>
+                            <p>Today</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-sign-in-alt"></i></div>
+                        <div class="stat-info">
+                            <h4 id="loginCount">0</h4>
+                            <p>Recent Logins</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <h4 id="activeRoles">0</h4>
+                            <p>Active Roles</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>All Activities</h3>
+                        <div class="filter-bar">
+                            <select class="form-control" style="width:140px" id="filterAction" onchange="loadLogs()">
+                                <option value="">All Actions</option>
+                                <option value="login">Login</option>
+                                <option value="register">Create Account</option>
+                                <option value="create">Create</option>
+                                <option value="delete">Delete</option>
+                                <option value="enroll">Enroll</option>
+                                <option value="record">Record</option>
+                            </select>
+                            <select class="form-control" style="width:140px" id="filterCategory" onchange="loadLogs()">
+                                <option value="">All Categories</option>
+                                <option value="auth">Authentication</option>
+                                <option value="account">Account</option>
+                                <option value="student">Student</option>
+                                <option value="teacher">Teacher</option>
+                                <option value="enrollment">Enrollment</option>
+                                <option value="grade">Grade</option>
+                                <option value="attendance">Attendance</option>
+                                <option value="announcement">Announcement</option>
+                            </select>
+                            <select class="form-control" style="width:130px" id="filterRole" onchange="loadLogs()">
+                                <option value="">All Roles</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="admin">Admin</option>
+                                <option value="registrar">Registrar</option>
+                                <option value="principal">Principal</option>
+                                <option value="teacher">Teacher</option>
+                                <option value="student">Student</option>
+                                <option value="parent">Parent</option>
+                            </select>
+                            <select class="form-control" style="width:120px" id="filterDays" onchange="loadLogs()">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="activityList">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>Loading activity logs...</p>
+                        </div>
+                    </div>
+                    <div class="card-footer" id="paginationFooter" style="display:none;">
+                        <span id="logCount"></span>
+                        <div class="pagination" id="pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('activity-log');
+        let currentPage = 0;
+        const PAGE_SIZE = 50;
+
+        function formatTime(iso) {
+            if (!iso) return '-';
+            const d = new Date(iso);
+            const now = new Date();
+            const diffMs = now - d;
+            const diffMin = Math.floor(diffMs / 60000);
+            const diffHr = Math.floor(diffMs / 3600000);
+            const diffDay = Math.floor(diffMs / 86400000);
+            if (diffMin < 1) return 'Just now';
+            if (diffMin < 60) return `${diffMin}m ago`;
+            if (diffHr < 24) return `${diffHr}h ago`;
+            if (diffDay < 7) return `${diffDay}d ago`;
+            return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getActionIcon(action) {
+            const map = { login: 'fa-sign-in-alt', register: 'fa-user-plus', create: 'fa-plus-circle', delete: 'fa-trash', enroll: 'fa-graduation-cap', record: 'fa-clipboard-check' };
+            return map[action] || 'fa-circle';
+        }
+
+        function renderLog(log) {
+            return `
+                <div class="activity-entry">
+                    <div class="activity-icon ${log.action}">
+                        <i class="fas ${getActionIcon(log.action)}"></i>
+                    </div>
+                    <div class="activity-body">
+                        <div class="activity-desc">${log.description || log.action}</div>
+                        <div class="activity-meta">
+                            <span class="role-badge ${log.user_role}">${(log.user_role || '').replace('_', ' ')}</span>
+                            <span><i class="fas fa-user"></i> ${log.username || 'system'}</span>
+                            <span><i class="fas fa-clock"></i> ${formatTime(log.created_at)}</span>
+                            ${log.ip_address ? `<span><i class="fas fa-globe"></i> ${log.ip_address}</span>` : ''}
+                            ${log.category ? `<span><i class="fas fa-tag"></i> ${log.category}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadLogs(page = 0) {
+            currentPage = page;
+            const action = document.getElementById('filterAction').value;
+            const category = document.getElementById('filterCategory').value;
+            const role = document.getElementById('filterRole').value;
+            const days = document.getElementById('filterDays').value;
+            let url = `/activity/?days=${days}&limit=${PAGE_SIZE}&skip=${page * PAGE_SIZE}`;
+            if (action) url += `&action=${action}`;
+            if (category) url += `&category=${category}`;
+            if (role) url += `&user_role=${role}`;
+            try {
+                const data = await api.get(url);
+                const list = document.getElementById('activityList');
+                if (!data.logs || data.logs.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No activities found for the selected filters</p></div>';
+                } else {
+                    list.innerHTML = data.logs.map(renderLog).join('');
+                }
+                document.getElementById('logCount').textContent = `Showing ${data.logs.length} of ${data.total} activities`;
+                const totalPages = Math.ceil(data.total / PAGE_SIZE);
+                const pagination = document.getElementById('pagination');
+                const footer = document.getElementById('paginationFooter');
+                if (totalPages > 1) {
+                    footer.style.display = 'flex';
+                    pagination.innerHTML = Array.from({length: Math.min(totalPages, 10)}, (_, i) =>
+                        `<button class="btn btn-sm ${i === page ? 'btn-primary' : 'btn-outline'}" onclick="loadLogs(${i})">${i + 1}</button>`
+                    ).join('');
+                } else {
+                    footer.style.display = data.logs.length > 0 ? 'flex' : 'none';
+                }
+            } catch (err) {
+                document.getElementById('activityList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading activity logs</p></div>';
+                console.error(err);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const stats = await api.get('/activity/stats?days=7');
+                document.getElementById('totalActivities').textContent = stats.total || 0;
+                document.getElementById('todayCount').textContent = stats.today || 0;
+                document.getElementById('loginCount').textContent = stats.recent_logins || 0;
+                document.getElementById('activeRoles').textContent = Object.keys(stats.by_role || {}).length;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadStats();
+        loadLogs();
+    </script>
+</body>
+</html>

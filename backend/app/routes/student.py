@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
@@ -6,6 +6,7 @@ from app.models.student import Student
 from app.models.user import User
 from app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentListResponse
 from app.utils.auth import get_current_user, require_role
+from app.routes.activity import log_activity
 
 router = APIRouter(prefix="/api/students", tags=["Students"])
 
@@ -45,6 +46,7 @@ def get_student(
 @router.post("/", response_model=StudentResponse)
 def create_student(
     student: StudentCreate,
+    request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin", "registrar")),
 ):
@@ -56,6 +58,15 @@ def create_student(
     db.add(new_student)
     db.commit()
     db.refresh(new_student)
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="create", category="student",
+        description=f"Created student: {student.first_name} {student.last_name} (LRN: {student.lrn})",
+        target_type="student", target_id=new_student.id,
+        ip_address=request.client.host if request.client else None,
+    )
+
     return new_student
 
 
@@ -82,12 +93,21 @@ def update_student(
 @router.delete("/{student_id}")
 def delete_student(
     student_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin")),
 ):
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="delete", category="student",
+        description=f"Deleted student: {student.first_name} {student.last_name} (LRN: {student.lrn})",
+        target_type="student", target_id=student.id,
+        ip_address=request.client.host if request.client else None,
+    )
 
     db.delete(student)
     db.commit()

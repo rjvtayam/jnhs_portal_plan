@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.announcement import Announcement, Event
@@ -12,6 +12,7 @@ from app.schemas.announcement import (
 )
 from app.utils.auth import get_current_user, require_role
 from app.routes.notifications import create_notification
+from app.routes.activity import log_activity
 
 router = APIRouter(prefix="/api", tags=["Announcements & Events"])
 
@@ -34,6 +35,7 @@ def list_announcements(
 @router.post("/announcements", response_model=AnnouncementResponse)
 def create_announcement(
     announcement: AnnouncementCreate,
+    request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin", "registrar")),
 ):
@@ -71,6 +73,14 @@ def create_announcement(
                 reference_type="announcement",
                 link="/pages/{role}/announcements.html".replace("{role}", target_user.role if target_user.role != "super_admin" else "superadmin"),
             )
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="create", category="announcement",
+        description=f"Posted announcement: {announcement.title} to {audience}",
+        target_type="announcement", target_id=new_announcement.id,
+        ip_address=request.client.host if request.client else None,
+    )
 
     return new_announcement
 

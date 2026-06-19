@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.database import get_db
@@ -11,6 +11,7 @@ from app.schemas.grade import GradeInput, GradeUpdate, GradeResponse
 from app.services.grading_service import compute_quarterly_grade
 from app.utils.auth import get_current_user, require_role
 from app.routes.notifications import create_notification
+from app.routes.activity import log_activity
 
 router = APIRouter(prefix="/api/grades", tags=["Grades"])
 
@@ -50,6 +51,7 @@ def get_section_grades(
 @router.post("/", response_model=GradeResponse)
 def create_grade(
     grade_input: GradeInput,
+    request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin", "teacher")),
 ):
@@ -102,6 +104,14 @@ def create_grade(
 
     # Notify student + parents
     _notify_grade(db, new_grade, subject, user)
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="create", category="grade",
+        description=f"Encoded grade for student #{grade_input.student_id}: {grade_input.quarter} = {new_grade.transmuted_grade}",
+        target_type="grade", target_id=new_grade.id,
+        ip_address=request.client.host if request.client else None,
+    )
 
     return new_grade
 

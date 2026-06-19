@@ -27,7 +27,7 @@
         .grade-row:last-child { border-bottom: none; }
         .grade-subject { font-weight: 500; }
         .grade-value { font-weight: 700; font-size: 1.1rem; }
-        .grade-detail { font-size: 0.85rem; color: #718096; }
+        .grade-detail { font-size: 0.85rem; color: var(--text-secondary); }
     </style>
 </head>
 <body>
@@ -46,7 +46,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h3>All Grades</h3>
-                        <span id="semesterInfo" style="font-size:0.9rem;color:#718096;"></span>
+                        <span id="semesterInfo" style="font-size:0.9rem;color:var(--text-secondary);"></span>
                     </div>
                     <div class="card-body" id="gradesContainer">
                         <p class="text-secondary">Loading grades...</p>
@@ -92,7 +92,7 @@
                 });
 
                 let html = '<table style="width:100%;border-collapse:collapse;">';
-                html += '<thead><tr style="background:#f7fafc;">' +
+                html += '<thead><tr style="background:var(--bg-input);">' +
                     '<th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Subject</th>' +
                     '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Q1</th>' +
                     '<th style="padding:10px;border-bottom:2px solid #e2e8f0;">Q2</th>' +
@@ -144,7 +144,7 @@
                             <span class="grade-badge ${cls}" style="font-size:1.1rem;padding:8px 20px;">
                                 ${overallAvg >= 75 ? 'PASSING' : 'NEED IMPROVEMENT'}
                             </span>
-                            <p style="margin-top:10px;color:#718096;">Based on ${allAverages.length} subjects</p>
+                            <p style="margin-top:10px;color:var(--text-secondary);">Based on ${allAverages.length} subjects</p>
                         </div>
                     `;
                 }

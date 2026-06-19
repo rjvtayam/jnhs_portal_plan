@@ -159,6 +159,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/superadmin/errors.html" class="nav-item ${activePage === 'system-errors' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bug"></i></span> Error Logs
                 </a>
+                <a href="/pages/superadmin/activity.html" class="nav-item ${activePage === 'activity-log' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-clipboard-list"></i></span> Activity Log
+                </a>
                 <a href="/pages/superadmin/users.html" class="nav-item ${activePage === 'system-users' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-users-cog"></i></span> User Management
                 </a>

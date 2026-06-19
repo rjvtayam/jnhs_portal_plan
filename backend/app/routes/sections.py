@@ -14,6 +14,7 @@ router = APIRouter(prefix="/api", tags=["Sections & Subjects"])
 
 
 @router.get("/sections", response_model=list[SectionResponse])
+@router.get("/sections/", response_model=list[SectionResponse])
 def list_sections(
     school_year: str = None,
     grade_level: str = None,

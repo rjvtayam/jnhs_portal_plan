@@ -33,12 +33,12 @@
                             <div class="form-group">
                                 <label>Search Student by LRN</label>
                                 <input type="text" class="form-control" id="studentLRN" placeholder="Enter LRN..." oninput="searchStudentForAccount()">
-                                <div id="studentAccountResults" style="max-height:150px;overflow-y:auto;border:1px solid #1e2a4a;border-radius:4px;margin-top:5px;display:none;background:#111827;"></div>
+                                <div id="studentAccountResults" style="max-height:150px;overflow-y:auto;border:1px solid var(--border-color);border-radius:4px;margin-top:5px;display:none;background:var(--bg-card);"></div>
                             </div>
-                            <div id="selectedStudentAccount" style="display:none;background:rgba(30,42,74,0.5);padding:10px;border-radius:4px;margin-bottom:15px;border:1px solid #1e2a4a;"></div>
+                            <div id="selectedStudentAccount" style="display:none;background:var(--bg-card);padding:10px;border-radius:4px;margin-bottom:15px;border:1px solid var(--border-color);"></div>
                             <input type="hidden" id="selectedStudentIdForAccount">
                             <button class="btn btn-primary" style="width:100%" onclick="createStudentAccount()">Create Student Account</button>
-                            <p style="margin-top:10px;font-size:0.8rem;color:#5a6a8a;">
+                            <p style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);">
                                 Username = LRN | Password = LRN
                             </p>
                         </div>
@@ -52,16 +52,16 @@
                             <div class="form-group">
                                 <label>Search Student by LRN</label>
                                 <input type="text" class="form-control" id="parentStudentLRN" placeholder="Enter student LRN..." oninput="searchStudentForParent()">
-                                <div id="parentStudentResults" style="max-height:150px;overflow-y:auto;border:1px solid #1e2a4a;border-radius:4px;margin-top:5px;display:none;background:#111827;"></div>
+                                <div id="parentStudentResults" style="max-height:150px;overflow-y:auto;border:1px solid var(--border-color);border-radius:4px;margin-top:5px;display:none;background:var(--bg-card);"></div>
                             </div>
-                            <div id="selectedParentStudent" style="display:none;background:rgba(30,42,74,0.5);padding:10px;border-radius:4px;margin-bottom:15px;border:1px solid #1e2a4a;"></div>
+                            <div id="selectedParentStudent" style="display:none;background:var(--bg-card);padding:10px;border-radius:4px;margin-bottom:15px;border:1px solid var(--border-color);"></div>
                             <input type="hidden" id="selectedStudentIdForParent">
                             <div class="form-group">
                                 <label>Parent Email</label>
                                 <input type="email" class="form-control" id="parentEmail" placeholder="parent@email.com">
                             </div>
                             <button class="btn btn-primary" style="width:100%" onclick="createParentAccount()">Create Parent Account</button>
-                            <p style="margin-top:10px;font-size:0.8rem;color:#5a6a8a;">
+                            <p style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);">
                                 Username = Email | Password = Child's LRN
                             </p>
                         </div>
@@ -111,11 +111,11 @@
                 const container = document.getElementById('studentAccountResults');
                 container.style.display = 'block';
                 container.innerHTML = students.slice(0, 10).map(s => `
-                    <div style="padding:8px;cursor:pointer;border-bottom:1px solid #1e2a4a;color:#e0e0e0;" onclick="selectStudentForAccount(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}', ${s.has_account})">
+                    <div style="padding:8px;cursor:pointer;border-bottom:1px solid var(--border-color);color:var(--text-primary);" onclick="selectStudentForAccount(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}', ${s.has_account})">
                         <strong>${s.lrn}</strong> - ${s.last_name}, ${s.first_name}
                         ${s.has_account ? '<span style="color:#00e676;margin-left:8px;font-size:0.8rem;">Has Account</span>' : '<span style="color:#ffc107;margin-left:8px;font-size:0.8rem;">No Account</span>'}
                     </div>
-                `).join('') || '<div style="padding:8px;color:#5a6a8a;">No students found</div>';
+                `).join('') || '<div style="padding:8px;color:var(--text-muted);">No students found</div>';
             } catch (err) {
                 console.error(err);
             }
@@ -160,10 +160,10 @@
                 const container = document.getElementById('parentStudentResults');
                 container.style.display = 'block';
                 container.innerHTML = students.slice(0, 10).map(s => `
-                    <div style="padding:8px;cursor:pointer;border-bottom:1px solid #1e2a4a;color:#e0e0e0;" onclick="selectStudentForParent(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}', '${s.guardian_name || ''}')">
+                    <div style="padding:8px;cursor:pointer;border-bottom:1px solid var(--border-color);color:var(--text-primary);" onclick="selectStudentForParent(${s.id}, '${s.lrn}', '${s.last_name}, ${s.first_name}', '${s.guardian_name || ''}')">
                         <strong>${s.lrn}</strong> - ${s.last_name}, ${s.first_name}
                     </div>
-                `).join('') || '<div style="padding:8px;color:#5a6a8a;">No students found</div>';
+                `).join('') || '<div style="padding:8px;color:var(--text-muted);">No students found</div>';
             } catch (err) {
                 console.error(err);
             }
@@ -176,7 +176,7 @@
             document.getElementById('selectedParentStudent').style.display = 'block';
             document.getElementById('selectedParentStudent').innerHTML = `
                 <strong>${name}</strong> (LRN: ${lrn})<br>
-                <span style="color:#5a6a8a;">Guardian: ${guardian || 'Not set'}</span>
+                <span style="color:var(--text-muted);">Guardian: ${guardian || 'Not set'}</span>
             `;
         }
 
@@ -205,17 +205,17 @@
                 const tbody = document.getElementById('accountsTable');
 
                 if (!students || students.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#5a6a8a;">No students found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted);">No students found</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = students.map(s => `
                     <tr>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${s.lrn}</td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${s.last_name}, ${s.first_name}</td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;"><span style="color:#2979ff;">Student</span></td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;">${s.has_account ? '<span style="color:#00e676;">Active</span>' : '<span style="color:#ffc107;">No Account</span>'}</td>
-                        <td style="padding:8px;border-bottom:1px solid #1e2a4a;color:#e0e0e0;">${s.username || '-'}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);color:var(--text-primary);">${s.lrn}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);color:var(--text-primary);">${s.last_name}, ${s.first_name}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);"><span style="color:#2979ff;">Student</span></td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);">${s.has_account ? '<span style="color:#00e676;">Active</span>' : '<span style="color:#ffc107;">No Account</span>'}</td>
+                        <td style="padding:8px;border-bottom:1px solid var(--border-color);color:var(--text-primary);">${s.username || '-'}</td>
                     </tr>
                 `).join('');
             } catch (err) {

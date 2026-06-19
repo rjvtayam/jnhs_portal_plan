@@ -11,19 +11,19 @@
     <link rel="stylesheet" href="/css/main.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0a0e1a; color: #e0e0e0; }
-        .dashboard { background: #0a0e1a; }
-        .main-content { background: #0a0e1a; }
-        .topbar { background: linear-gradient(135deg, #0d1224, #1a1e3a); border-bottom: 1px solid #1e2a4a; }
-        .topbar-title h1 { color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
-        .topbar-title p { color: #8892b0; }
+        body { background: var(--bg-body); color: var(--text-primary); }
+        .dashboard { background: var(--bg-body); }
+        .main-content { background: var(--bg-body); }
+        .topbar { background: var(--bg-topbar); border-bottom: 1px solid var(--border-color); }
+        .topbar-title h1 { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+        .topbar-title p { color: var(--text-secondary); }
         .topbar-actions .btn-outline { border-color: #7c4dff; color: #7c4dff; background: transparent; }
         .topbar-actions .btn-outline:hover { background: rgba(124,77,255,0.15); box-shadow: 0 0 12px rgba(124,77,255,0.3); }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card {
-            background: linear-gradient(145deg, #111827, #1a1e3a);
-            border: 1px solid #1e2a4a; border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px;
             padding: 20px; display: flex; align-items: center; gap: 16px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -37,8 +37,8 @@
         .stat-icon.blue { background: linear-gradient(135deg, rgba(49,130,206,0.2), rgba(124,77,255,0.15)); color: #7c4dff; border: 1px solid rgba(124,77,255,0.3); }
         .stat-icon.yellow { background: linear-gradient(135deg, rgba(214,158,46,0.2), rgba(233,30,99,0.15)); color: #e91e63; border: 1px solid rgba(233,30,99,0.3); }
         .stat-icon.red { background: linear-gradient(135deg, rgba(229,62,62,0.2), rgba(233,30,99,0.2)); color: #e91e63; border: 1px solid rgba(233,30,99,0.3); }
-        .stat-info h4 { font-size: 1.5rem; font-weight: 700; color: #e0e0e0; margin: 0; }
-        .stat-info p { font-size: 0.85rem; color: #8892b0; margin: 2px 0 0; }
+        .stat-info h4 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .stat-info p { font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0; }
         .stat-icon.green::after { content: ""; position: absolute; width: 48px; height: 48px; border-radius: 12px; background: radial-gradient(circle, rgba(0,229,255,0.15), transparent 70%); pointer-events: none; }
 
         .health-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
@@ -47,23 +47,23 @@
         .health-yellow { background: #d69e2e; box-shadow: 0 0 8px rgba(214,158,46,0.6); }
 
         .metric-card {
-            background: linear-gradient(145deg, #111827, #1a1e3a);
-            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;
         }
-        .metric-card h4 { font-size: 0.8rem; color: #8892b0; text-transform: uppercase; margin-bottom: 8px; }
+        .metric-card h4 { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; }
         .metric-card .value { font-size: 2rem; font-weight: 700; color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
-        .metric-card .unit { font-size: 0.85rem; color: #8892b0; }
+        .metric-card .unit { font-size: 0.85rem; color: var(--text-secondary); }
 
         .card {
-            background: linear-gradient(145deg, #111827, #1a1e3a);
-            border: 1px solid #1e2a4a; border-radius: 12px; margin-bottom: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 24px;
         }
-        .card-header { padding: 16px 20px; border-bottom: 1px solid #1e2a4a; display: flex; justify-content: space-between; align-items: center; }
-        .card-header h3 { color: #e0e0e0; margin: 0; font-size: 1rem; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { color: var(--text-primary); margin: 0; font-size: 1rem; }
         .card-body { padding: 20px; }
 
         .log-entry {
-            padding: 12px 15px; border-bottom: 1px solid #1e2a4a;
+            padding: 12px 15px; border-bottom: 1px solid var(--border-color);
             display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
         }
         .log-entry:last-child { border-bottom: none; }
@@ -77,32 +77,32 @@
         .log-error { background: rgba(233,30,99,0.1); color: #e91e63; border: 1px solid rgba(233,30,99,0.2); }
         .log-success { background: rgba(56,161,105,0.1); color: #38a169; border: 1px solid rgba(56,161,105,0.2); }
 
-        .tabs { display: flex; border-bottom: 2px solid #1e2a4a; margin-bottom: 20px; }
+        .tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; }
         .tab {
             padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent;
-            margin-bottom: -2px; font-weight: 500; color: #8892b0; transition: all 0.2s;
+            margin-bottom: -2px; font-weight: 500; color: var(--text-secondary); transition: all 0.2s;
         }
-        .tab:hover { color: #e0e0e0; }
+        .tab:hover { color: var(--text-primary); }
         .tab.active { color: #00e5ff; border-bottom-color: #00e5ff; text-shadow: 0 0 8px rgba(0,229,255,0.3); }
 
-        .form-control { background: #111827; border: 1px solid #1e2a4a; color: #e0e0e0; border-radius: 6px; padding: 6px 10px; }
+        .form-control { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 6px 10px; }
         .form-control:focus { border-color: #00e5ff; outline: none; box-shadow: 0 0 8px rgba(0,229,255,0.2); }
-        .text-secondary { color: #8892b0; }
+        .text-secondary { color: var(--text-secondary); }
         .text-danger { color: #e91e63; }
 
         .chart-container {
-            background: linear-gradient(145deg, #111827, #1a1e3a);
-            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;
         }
-        .chart-container h3 { color: #e0e0e0; margin: 0 0 16px; font-size: 1rem; }
+        .chart-container h3 { color: var(--text-primary); margin: 0 0 16px; font-size: 1rem; }
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px; }
         .charts-grid canvas { max-height: 300px; }
 
         .quick-actions {
-            background: linear-gradient(145deg, #111827, #1a1e3a);
-            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;
         }
-        .quick-actions h3 { color: #e0e0e0; margin: 0 0 16px; font-size: 1rem; }
+        .quick-actions h3 { color: var(--text-primary); margin: 0 0 16px; font-size: 1rem; }
         .quick-actions-grid { display: flex; gap: 12px; flex-wrap: wrap; }
         .quick-action-btn {
             padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
@@ -115,13 +115,13 @@
         .quick-action-btn.users:hover { background: rgba(0,229,255,0.2); box-shadow: 0 0 12px rgba(0,229,255,0.3); }
 
         .health-card {
-            background: linear-gradient(145deg, #111827, #1a1e3a);
-            border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;
         }
-        .health-card h3 { color: #e0e0e0; margin: 0 0 12px; font-size: 1rem; }
-        .health-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #1e2a4a; }
+        .health-card h3 { color: var(--text-primary); margin: 0 0 12px; font-size: 1rem; }
+        .health-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
         .health-row:last-child { border-bottom: none; }
-        .health-label { color: #8892b0; min-width: 120px; font-size: 0.9rem; }
+        .health-label { color: var(--text-secondary); min-width: 120px; font-size: 0.9rem; }
         .health-value { font-weight: 600; }
         .health-connected { color: #00e5ff; }
         .health-disconnected { color: #e91e63; }
@@ -368,8 +368,8 @@
                             legend: { labels: { color: '#8892b0' } }
                         },
                         scales: {
-                            x: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } },
-                            y: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } }
+                            x: { display: false },
+                            y: { display: false }
                         }
                     }
                 });
@@ -414,8 +414,8 @@
                             legend: { labels: { color: '#8892b0' } }
                         },
                         scales: {
-                            x: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } },
-                            y: { ticks: { color: '#8892b0' }, grid: { color: 'rgba(30,42,74,0.5)' } }
+                            x: { grid: { display: false }, ticks: { color: '#8892b0' } },
+                            y: { grid: { display: false }, ticks: { display: false } }
                         }
                     }
                 });

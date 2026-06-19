@@ -60,14 +60,14 @@
                     <div class="card-body">
                         <table style="width:100%;border-collapse:collapse;">
                             <thead>
-                                <tr style="background:#f7fafc;">
+                                <tr style="background:var(--bg-input);">
                                     <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Date</th>
                                     <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Status</th>
                                     <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Remarks</th>
                                 </tr>
                             </thead>
                             <tbody id="attendanceBody">
-                                <tr><td colspan="3" style="padding:20px;text-align:center;color:#718096;">Loading...</td></tr>
+                                <tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-secondary);">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -91,7 +91,7 @@
                 document.getElementById('lateCount').textContent = data.summary ? data.summary.late : 0;
 
                 if (!data.records || data.records.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="padding:20px;text-align:center;color:#718096;">No attendance records yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-secondary);">No attendance records yet</td></tr>';
                     return;
                 }
 

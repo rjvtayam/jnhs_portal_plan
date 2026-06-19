@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.teacher import Teacher
 from app.models.user import User
 from app.schemas.teacher import TeacherCreate, TeacherUpdate, TeacherResponse
 from app.utils.auth import get_current_user, require_role
+from app.routes.activity import log_activity
 
 router = APIRouter(prefix="/api/teachers", tags=["Teachers"])
 
@@ -34,6 +35,7 @@ def get_teacher(
 @router.post("/", response_model=TeacherResponse)
 def create_teacher(
     teacher: TeacherCreate,
+    request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin")),
 ):
@@ -41,6 +43,15 @@ def create_teacher(
     db.add(new_teacher)
     db.commit()
     db.refresh(new_teacher)
+
+    log_activity(
+        db=db, user_id=user.id, username=user.username, user_role=user.role,
+        action="create", category="teacher",
+        description=f"Created teacher: {teacher.first_name} {teacher.last_name}",
+        target_type="teacher", target_id=new_teacher.id,
+        ip_address=request.client.host if request.client else None,
+    )
+
     return new_teacher
 
 

@@ -49,14 +49,14 @@
                     <div class="card" style="margin-bottom:15px;">
                         <div class="card-header">
                             <h3>Grade ${s.grade_level} - ${s.name}</h3>
-                            <span style="color:#718096;">${s.track || 'General'}</span>
+                            <span style="color:var(--text-secondary);">${s.track || 'General'}</span>
                         </div>
                         <div class="card-body">
                             <p style="margin-bottom:10px;"><strong>${s.students || 0} students</strong></p>
-                            <h4 style="margin-bottom:8px;color:#718096;font-size:0.9rem;">Assigned Subjects</h4>
+                            <h4 style="margin-bottom:8px;color:var(--text-secondary);font-size:0.9rem;">Assigned Subjects</h4>
                             <table style="width:100%;border-collapse:collapse;">
                                 <thead>
-                                    <tr style="background:#f7fafc;">
+                                    <tr style="background:var(--bg-input);">
                                         <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Subject</th>
                                         <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Code</th>
                                         <th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;">Schedule</th>
