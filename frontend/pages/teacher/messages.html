@@ -77,6 +77,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="hideModal('viewModal')">Close</button>
+                <button class="btn btn-primary" id="replyBtn" onclick="replyToMessage()"><i class="fas fa-reply"></i> Reply</button>
             </div>
         </div>
     </div>
@@ -88,6 +89,8 @@
         initDashboard('teacher-messages');
         startMsgPolling();
         let currentFolder = 'inbox';
+        let currentViewSenderId = null;
+        let currentViewSubject = '';
 
         async function loadRecipients() {
             try {
@@ -138,14 +141,30 @@
             const subject = decodeURIComponent(atob(subjectB64));
             const body = decodeURIComponent(atob(bodyB64));
             const name = decodeURIComponent(atob(nameB64));
+            currentViewSenderId = null;
+            currentViewSubject = subject;
+            // Try to find sender_id from the message list data
             document.getElementById('viewSubject').textContent = subject;
             document.getElementById('viewMeta').innerHTML = `<strong>From:</strong> ${name} &nbsp;&bull;&nbsp; <strong>Date:</strong> ${formatDateTime(dateStr)}`;
             document.getElementById('viewBody').textContent = body;
+            document.getElementById('replyBtn').style.display = currentFolder === 'inbox' ? '' : 'none';
             showModal('viewModal');
             if (currentFolder === 'inbox') {
                 await api.put(`/messages/${id}/read`);
                 fetchMsgUnreadCount();
             }
+        }
+
+        async function replyToMessage() {
+            hideModal('viewModal');
+            await loadRecipients();
+            if (currentViewSenderId) {
+                document.getElementById('msgRecipient').value = currentViewSenderId;
+            }
+            document.getElementById('msgSubject').value = currentViewSubject.startsWith('Re: ') ? currentViewSubject : 'Re: ' + currentViewSubject;
+            document.getElementById('msgBody').value = '';
+            document.getElementById('msgBody').focus();
+            showModal('composeModal');
         }
 
         async function sendMessage() {
