@@ -97,11 +97,6 @@
             text-transform: uppercase; letter-spacing: 0.5px;
         }
 
-        /* ANIMATED DOTS */
-        .particles-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-        }
-
         /* SECTION COMMONS */
         section { padding: 100px 40px; }
         .section-title {
@@ -243,12 +238,14 @@
         .testimony-submit:hover { box-shadow: 0 4px 15px rgba(30,136,229,0.3); }
 
         /* FAQ */
-        .faq { background: #f8f9fc; }
+        .faq { background: #f8f9fc; position: relative; overflow: hidden; }
+        .faq-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .faq > *:not(.faq-canvas) { position: relative; z-index: 1; }
         .faq-list { max-width: 800px; margin: 0 auto; }
         .faq-item {
             border: 1px solid #e2e8f0; border-radius: 12px;
             margin-bottom: 12px; overflow: hidden; transition: all 0.3s;
-            background: #ffffff;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(6px);
         }
         .faq-item:hover { border-color: rgba(30,136,229,0.3); }
         .faq-question {
@@ -260,16 +257,16 @@
             width: 38px; height: 38px; border-radius: 10px; display: flex;
             align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
         }
-        .faq-q-icon.pink { background: rgba(30,136,229,0.1); color: #1e88e5; }
-        .faq-q-icon.cyan { background: rgba(0,229,255,0.1); color: #00b8d4; }
-        .faq-q-icon.purple { background: rgba(124,77,255,0.1); color: #7c4dff; }
-        .faq-q-icon.green { background: rgba(0,230,118,0.1); color: #00c853; }
-        .faq-q-icon.yellow { background: rgba(255,193,7,0.1); color: #f57c00; }
+        .faq-q-icon.pink { background: rgba(233,30,99,0.12); color: #e91e63; }
+        .faq-q-icon.cyan { background: rgba(0,229,255,0.12); color: #00bcd4; }
+        .faq-q-icon.purple { background: rgba(124,77,255,0.12); color: #7c4dff; }
+        .faq-q-icon.green { background: rgba(0,230,118,0.12); color: #00c853; }
+        .faq-q-icon.orange { background: rgba(255,152,0,0.12); color: #ff9800; }
         .faq-question i.fas { color: #1e88e5; transition: transform 0.3s; font-size: 0.85rem; }
         .faq-item.open .faq-question i.fas { transform: rotate(180deg); }
         .faq-answer {
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
-            background: #f8f9fc; padding: 0 24px; color: #5a6072; line-height: 1.7;
+            background: rgba(248,249,252,0.9); padding: 0 24px; color: #5a6072; line-height: 1.7;
         }
         .faq-item.open .faq-answer { max-height: 200px; padding: 0 24px 18px; }
 
@@ -373,7 +370,6 @@
     </nav>
 
     <section class="hero">
-        <canvas class="particles-canvas" id="particles"></canvas>
         <div class="hero-content">
             <div class="hero-badge">School Year 2025-2026</div>
             <h1>Jomalig National High School</h1>
@@ -608,6 +604,7 @@
     </div>
 
     <section class="faq" id="faq">
+        <canvas class="faq-canvas" id="faqParticles"></canvas>
         <h2 class="section-title">Frequently Asked <span>Questions</span></h2>
         <p class="section-subtitle">Find answers to common questions about the JNHS Portal.</p>
         <div class="faq-list">
@@ -628,7 +625,7 @@
                 <div class="faq-answer"><p>Enrollment can be processed through the portal or by visiting the school. The registrar will assist with section assignment and enrollment confirmation.</p></div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
-                <div class="faq-question"><div class="faq-q-icon yellow"><i class="fas fa-headset"></i></div><span class="faq-q-text">Who do I contact for portal issues?</span><i class="fas fa-chevron-down"></i></div>
+                <div class="faq-question"><div class="faq-q-icon orange"><i class="fas fa-headset"></i></div><span class="faq-q-text">Who do I contact for portal issues?</span><i class="fas fa-chevron-down"></i></div>
                 <div class="faq-answer"><p>For technical issues, please email portal@jnhs.edu.ph or visit the school office during business hours. You can also reach us through our Facebook page.</p></div>
             </div>
         </div>
@@ -867,23 +864,27 @@
             setTimeout(() => { toast.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
-        // ===== PARTICLES =====
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        const PARTICLE_COUNT = 40;
-        const pColors = ['rgba(233,30,99,0.25)', 'rgba(0,229,255,0.25)', 'rgba(124,77,255,0.25)', 'rgba(233,30,99,0.15)', 'rgba(0,229,255,0.15)'];
+        // ===== PARTICLES (FAQ section) =====
+        const faqCanvas = document.getElementById('faqParticles');
+        const fCtx = faqCanvas.getContext('2d');
+        let faqParticles = [];
+        const PARTICLE_COUNT = 30;
+        const pColors = [
+            'rgba(233,30,99,0.2)', 'rgba(0,229,255,0.2)', 'rgba(124,77,255,0.2)',
+            'rgba(0,200,83,0.2)', 'rgba(255,152,0,0.2)',
+            'rgba(233,30,99,0.1)', 'rgba(0,229,255,0.1)', 'rgba(124,77,255,0.1)',
+        ];
 
-        function resizeCanvas() { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; }
-        function createParticle() { return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 3 + 2, dx: (Math.random() - 0.5) * 0.5, dy: (Math.random() - 0.5) * 0.5, color: pColors[Math.floor(Math.random() * pColors.length)] }; }
-        function initParticles() { particles = []; for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(createParticle()); }
-        function drawParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill(); p.x += p.dx; p.y += p.dy; if (p.x < 0 || p.x > canvas.width) p.dx *= -1; if (p.y < 0 || p.y > canvas.height) p.dy *= -1; });
-            requestAnimationFrame(drawParticles);
+        function resizeFaqCanvas() { faqCanvas.width = faqCanvas.parentElement.offsetWidth; faqCanvas.height = faqCanvas.parentElement.offsetHeight; }
+        function createFaqParticle() { return { x: Math.random() * faqCanvas.width, y: Math.random() * faqCanvas.height, r: Math.random() * 3 + 1.5, dx: (Math.random() - 0.5) * 0.4, dy: (Math.random() - 0.5) * 0.4, color: pColors[Math.floor(Math.random() * pColors.length)] }; }
+        function initFaqParticles() { faqParticles = []; for (let i = 0; i < PARTICLE_COUNT; i++) faqParticles.push(createFaqParticle()); }
+        function drawFaqParticles() {
+            fCtx.clearRect(0, 0, faqCanvas.width, faqCanvas.height);
+            faqParticles.forEach(p => { fCtx.beginPath(); fCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2); fCtx.fillStyle = p.color; fCtx.fill(); p.x += p.dx; p.y += p.dy; if (p.x < 0 || p.x > faqCanvas.width) p.dx *= -1; if (p.y < 0 || p.y > faqCanvas.height) p.dy *= -1; });
+            requestAnimationFrame(drawFaqParticles);
         }
-        resizeCanvas(); initParticles(); drawParticles();
-        window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+        resizeFaqCanvas(); initFaqParticles(); drawFaqParticles();
+        window.addEventListener('resize', () => { resizeFaqCanvas(); initFaqParticles(); });
 
         // ===== LEAFLET MAP - SATELLITE =====
         // Jomalig Island center (from exact bounding box)
