@@ -12,11 +12,12 @@
 
         /* NAVBAR */
         .landing-nav {
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+            background: transparent;
             padding: 14px 40px; display: flex; justify-content: space-between; align-items: center;
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: none; transition: background 0.3s;
         }
+        .landing-nav.scrolled { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid #e2e8f0; }
         .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .nav-logo {
             width: 42px; height: 42px; border-radius: 10px;
@@ -36,7 +37,7 @@
         .hero {
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
             padding: 120px 40px 80px; position: relative; text-align: center;
-            background: linear-gradient(135deg, #f0f7ff 0%, #e3f0ff 50%, #f5f9ff 100%);
+            background: #ffffff;
             overflow: hidden;
         }
         .hero-content { position: relative; z-index: 2; max-width: 800px; }
@@ -738,6 +739,11 @@
         window.addEventListener('scroll', updateActiveNav);
         window.addEventListener('load', updateActiveNav);
 
+        // Navbar transparency on scroll
+        window.addEventListener('scroll', () => {
+            document.querySelector('.landing-nav').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
         // ===== ANIMATED COUNTER =====
         function animateCounters() {
             document.querySelectorAll('.counter').forEach(counter => {
@@ -856,7 +862,7 @@
         const ctx = canvas.getContext('2d');
         let particles = [];
         const PARTICLE_COUNT = 40;
-        const pColors = ['rgba(30,136,229,0.25)', 'rgba(0,229,255,0.2)', 'rgba(21,101,192,0.25)', 'rgba(30,136,229,0.15)', 'rgba(0,176,255,0.15)'];
+        const pColors = ['rgba(233,30,99,0.25)', 'rgba(0,229,255,0.25)', 'rgba(124,77,255,0.25)', 'rgba(233,30,99,0.15)', 'rgba(0,229,255,0.15)'];
 
         function resizeCanvas() { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; }
         function createParticle() { return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 3 + 2, dx: (Math.random() - 0.5) * 0.5, dy: (Math.random() - 0.5) * 0.5, color: pColors[Math.floor(Math.random() * pColors.length)] }; }
