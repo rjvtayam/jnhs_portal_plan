@@ -369,7 +369,7 @@ function renderSidebar(activePage) {
 
     return `
         <div class="sidebar-header">
-            <div class="logo">J</div>
+            <div class="logo"><img src="/assets/images/logo.png" alt="JNHS" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"></div>
             <div class="school-name">Jomalig National High School</div>
         </div>
         <nav class="sidebar-nav">

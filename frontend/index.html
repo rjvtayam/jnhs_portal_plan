@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JNHS Portal - Jomalig National High School</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -20,12 +21,10 @@
         .landing-nav.scrolled { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid #e2e8f0; }
         .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .nav-logo {
-            width: 42px; height: 42px; border-radius: 10px;
-            background: linear-gradient(135deg, #1e88e5, #1565c0);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.2rem; color: white;
-            box-shadow: 0 4px 15px rgba(30,136,229,0.25);
+            width: 42px; height: 42px; border-radius: 50%;
+            overflow: hidden; flex-shrink: 0;
         }
+        .nav-logo img { width: 100%; height: 100%; object-fit: contain; }
         .nav-brand-text { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
         .nav-brand-text span { color: #1e88e5; }
         .nav-links { display: flex; align-items: center; gap: 30px; }
@@ -308,7 +307,7 @@
             max-width: 1200px; margin: 0 auto 40px;
         }
         .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-        .footer-brand .nav-logo { width: 36px; height: 36px; font-size: 1rem; }
+        .footer-brand .nav-logo { width: 40px; height: 40px; }
         .footer-brand-text { font-size: 1rem; font-weight: 700; color: #ffffff; }
         footer p { color: #8892b0; font-size: 0.85rem; line-height: 1.6; }
         footer h4 { color: #ffffff; font-size: 0.95rem; margin-bottom: 16px; font-weight: 600; }
@@ -351,7 +350,7 @@
 <body>
     <nav class="landing-nav">
         <a href="/" class="nav-brand">
-            <div class="nav-logo">J</div>
+            <div class="nav-logo"><img src="/assets/images/logo.png" alt="JNHS"></div>
             <div class="nav-brand-text">JNHS <span>Portal</span></div>
         </a>
         <div class="nav-links">
@@ -662,7 +661,7 @@
         <div class="footer-grid">
             <div>
                 <div class="footer-brand">
-                    <div class="nav-logo" style="width:36px;height:36px;font-size:1rem;border-radius:8px;">J</div>
+                    <div class="nav-logo" style="width:40px;height:40px;border-radius:50%;"><img src="/assets/images/logo.png" alt="JNHS" style="width:100%;height:100%;object-fit:contain;"></div>
                     <div class="footer-brand-text">JNHS Portal</div>
                 </div>
                 <p>Jomalig National High School<br>Jomalig, Quezon, Philippines<br>School ID: 301366</p>

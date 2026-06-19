@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JNHS Portal - Login</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/main.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -20,10 +21,12 @@
         .particles-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .login-left-content { position: relative; z-index: 2; text-align: center; }
         .school-badge {
-            width: 120px; height: 120px; background: linear-gradient(135deg, #1e88e5, #1565c0);
-            border-radius: 28px; display: flex; align-items: center; justify-content: center;
-            font-size: 3.5rem; font-weight: 800; color: white; margin: 0 auto 28px;
-            box-shadow: 0 8px 30px rgba(30,136,229,0.3);
+            width: 140px; height: 140px; margin: 0 auto 28px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .school-badge img {
+            width: 100%; height: 100%; object-fit: contain;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,0.15));
         }
         .login-left h1 {
             font-size: 2.2rem; font-weight: 800; margin-bottom: 8px;
@@ -95,7 +98,7 @@
         <div class="login-left">
             <canvas class="particles-canvas" id="particles"></canvas>
             <div class="login-left-content">
-                <div class="school-badge">J</div>
+                <div class="school-badge"><img src="/assets/images/logo.png" alt="JNHS Logo"></div>
                 <h1>JNHS Portal</h1>
                 <p class="subtitle">Jomalig National High School</p>
                 <p class="school-id">Jomalig, Quezon | School ID: 301366</p>
