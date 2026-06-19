@@ -77,6 +77,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/superadmin/notifications.html" class="nav-item ${activePage === 'superadmin-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
+                <a href="/pages/superadmin/messages.html" class="nav-item ${activePage === 'superadmin-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
             </div>
         `,
         principal: `
@@ -105,6 +108,9 @@ function renderSidebar(activePage) {
                 </a>
                 <a href="/pages/principal/notifications.html" class="nav-item ${activePage === 'principal-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+                </a>
+                <a href="/pages/principal/messages.html" class="nav-item ${activePage === 'principal-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
                 </a>
             </div>
         `,
@@ -150,6 +156,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/admin/notifications.html" class="nav-item ${activePage === 'admin-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
+                <a href="/pages/admin/messages.html" class="nav-item ${activePage === 'admin-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
             </div>
         `,
         registrar: `
@@ -188,6 +197,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/registrar/notifications.html" class="nav-item ${activePage === 'registrar-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
+                <a href="/pages/registrar/messages.html" class="nav-item ${activePage === 'registrar-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
             </div>
         `,
         teacher: `
@@ -214,6 +226,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/teacher/notifications.html" class="nav-item ${activePage === 'teacher-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
+                <a href="/pages/teacher/messages.html" class="nav-item ${activePage === 'teacher-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
             </div>
         `,
         student: `
@@ -237,6 +252,9 @@ function renderSidebar(activePage) {
                 <a href="/pages/student/notifications.html" class="nav-item ${activePage === 'student-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
                 </a>
+                <a href="/pages/student/messages.html" class="nav-item ${activePage === 'student-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
             </div>
         `,
         parent: `
@@ -253,6 +271,9 @@ function renderSidebar(activePage) {
                 </a>
                 <a href="/pages/parent/notifications.html" class="nav-item ${activePage === 'parent-notifications' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-bell"></i></span> Notifications
+                </a>
+                <a href="/pages/parent/messages.html" class="nav-item ${activePage === 'parent-messages' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-envelope"></i></span> Messages
                 </a>
             </div>
         `,
@@ -312,12 +333,17 @@ function initDashboard(activePage) {
                     <a href="/pages/${rolePath}/notifications.html" class="notif-view-all">View All Notifications</a>
                 </div>
             </div>
+            <a href="/pages/${rolePath}/messages.html" class="notif-bell" title="Messages" style="text-decoration:none;position:relative;">
+                <i class="fas fa-envelope"></i>
+                <span class="notif-badge" id="msgBadge" style="display:none">0</span>
+            </a>
         `;
         topbarActions.insertAdjacentHTML('afterbegin', bellHtml);
     }
 
-    // Start notification polling
+    // Start notification + message polling
     startNotifPolling();
+    fetchMsgUnreadCount();
 }
 
 // ===== NOTIFICATION SYSTEM =====
@@ -461,3 +487,31 @@ function stopNotifPolling() {
 }
 
 window.addEventListener('beforeunload', stopNotifPolling);
+
+// ===== MESSAGE UNREAD COUNT =====
+
+let _msgPollInterval = null;
+
+async function fetchMsgUnreadCount() {
+    try {
+        const data = await api.get('/messages/unread-count');
+        if (data === null) return;
+        const badge = document.getElementById('msgBadge');
+        if (badge) {
+            if (data.count > 0) {
+                badge.textContent = data.count > 99 ? '99+' : data.count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (err) {
+        // silent
+    }
+}
+
+function startMsgPolling() {
+    if (_msgPollInterval) clearInterval(_msgPollInterval);
+    fetchMsgUnreadCount();
+    _msgPollInterval = setInterval(fetchMsgUnreadCount, 30000);
+}

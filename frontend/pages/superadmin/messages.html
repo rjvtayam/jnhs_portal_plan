@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - JNHS Portal</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar"></aside>
+        <main class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <h1>Messages</h1>
+                    <p>System Administration</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary btn-sm" onclick="showModal('composeModal')"><i class="fas fa-pen"></i> Compose</button>
+                    <span class="user-info"></span>
+                </div>
+            </div>
+            <div class="content">
+                <div class="msg-tabs">
+                    <button class="msg-tab active" onclick="switchFolder('inbox', this)"><i class="fas fa-inbox"></i> Inbox</button>
+                    <button class="msg-tab" onclick="switchFolder('sent', this)"><i class="fas fa-paper-plane"></i> Sent</button>
+                </div>
+                <div class="card">
+                    <div class="card-body" id="msgList">
+                        <p class="text-secondary">Loading messages...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="composeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Compose Message</h3>
+                <button class="modal-close" onclick="hideModal('composeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>To</label>
+                    <select class="form-control" id="msgRecipient">
+                        <option value="">Select recipient...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" class="form-control" id="msgSubject" placeholder="Message subject...">
+                </div>
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea class="form-control" id="msgBody" rows="6" placeholder="Type your message..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="hideModal('composeModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="viewModal">
+        <div class="modal-content" style="max-width:650px;">
+            <div class="modal-header">
+                <h3 id="viewSubject">Message</h3>
+                <button class="modal-close" onclick="hideModal('viewModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="msg-detail-header">
+                    <div class="msg-detail-meta" id="viewMeta"></div>
+                </div>
+                <div class="msg-detail-body" id="viewBody"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="hideModal('viewModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        initDashboard('superadmin-messages');
+        startMsgPolling();
+        let currentFolder = 'inbox';
+
+        async function loadRecipients() {
+            try {
+                const recipients = await api.get('/messages/recipients') || [];
+                const sel = document.getElementById('msgRecipient');
+                sel.innerHTML = '<option value="">Select recipient...</option>' +
+                    recipients.map(r => `<option value="${r.id}">${r.display_name} (${r.role})</option>`).join('');
+            } catch(e) {}
+        }
+
+        async function loadMessages() {
+            try {
+                const msgs = await api.get(`/messages?folder=${currentFolder}&limit=100`) || [];
+                const container = document.getElementById('msgList');
+                if (msgs.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><h3>No messages</h3><p>Your ' + currentFolder + ' is empty.</p></div>';
+                    return;
+                }
+                container.innerHTML = msgs.map(m => {
+                    const name = currentFolder === 'inbox' ? (m.sender_username || 'Unknown') : (m.recipient_username || 'Unknown');
+                    const initial = name.charAt(0).toUpperCase();
+                    return `
+                        <div class="msg-item ${m.is_read ? '' : 'unread'}" onclick="viewMessage(${m.id}, '${btoa(encodeURIComponent(m.subject))}', '${btoa(encodeURIComponent(m.body))}', '${btoa(encodeURIComponent(name))}', '${m.created_at || ''}', ${m.sender_id})">
+                            <div class="msg-avatar"><i class="fas fa-user"></i></div>
+                            <div class="msg-body">
+                                <div class="msg-header">
+                                    <span class="msg-from">${name}</span>
+                                    <span class="msg-time">${getTimeAgo(m.created_at)}</span>
+                                </div>
+                                <div class="msg-subject">${m.subject}</div>
+                                <div class="msg-preview">${m.body.substring(0, 80)}${m.body.length > 80 ? '...' : ''}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                document.getElementById('msgList').innerHTML = '<p class="text-danger">Failed to load messages</p>';
+            }
+        }
+
+        function switchFolder(folder, btn) {
+            currentFolder = folder;
+            document.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            loadMessages();
+        }
+
+        async function viewMessage(id, subjectB64, bodyB64, nameB64, dateStr, senderId) {
+            const subject = decodeURIComponent(atob(subjectB64));
+            const body = decodeURIComponent(atob(bodyB64));
+            const name = decodeURIComponent(atob(nameB64));
+            document.getElementById('viewSubject').textContent = subject;
+            document.getElementById('viewMeta').innerHTML = `<strong>From:</strong> ${name} &nbsp;&bull;&nbsp; <strong>Date:</strong> ${formatDateTime(dateStr)}`;
+            document.getElementById('viewBody').textContent = body;
+            showModal('viewModal');
+            if (currentFolder === 'inbox') {
+                await api.put(`/messages/${id}/read`);
+                fetchMsgUnreadCount();
+            }
+        }
+
+        async function sendMessage() {
+            const recipientId = document.getElementById('msgRecipient').value;
+            const subject = document.getElementById('msgSubject').value.trim();
+            const body = document.getElementById('msgBody').value.trim();
+            if (!recipientId || !subject || !body) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            try {
+                await api.post('/messages', { recipient_id: parseInt(recipientId), subject, body });
+                showNotification('Message sent!', 'success');
+                hideModal('composeModal');
+                document.getElementById('msgRecipient').value = '';
+                document.getElementById('msgSubject').value = '';
+                document.getElementById('msgBody').value = '';
+                loadMessages();
+            } catch(e) {
+                showNotification(e.message || 'Failed to send message', 'error');
+            }
+        }
+
+        loadRecipients();
+        loadMessages();
+    </script>
+</body>
+</html>
