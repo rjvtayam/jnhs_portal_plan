@@ -24,6 +24,13 @@
                     <button class="notif-tab active" data-filter="all" onclick="filterNotifs('all', this)">All</button>
                     <button class="notif-tab" data-filter="unread" onclick="filterNotifs('unread', this)">Unread</button>
                 </div>
+                <div class="bulk-toolbar hidden" id="bulkToolbar">
+                    <div class="bulk-toolbar-info"><span id="selectedCount">0</span> selected</div>
+                    <div class="bulk-toolbar-actions">
+                        <button class="btn-delete-sm outline" onclick="clearSelection()"><i class="fas fa-times"></i> Cancel</button>
+                        <button class="btn-delete-sm danger" onclick="bulkDeleteNotifs()"><i class="fas fa-trash"></i> Delete Selected</button>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-body" id="notifListFull">
                         <p class="text-secondary">Loading notifications...</p>
@@ -39,6 +46,7 @@
         initDashboard('superadmin-notifications');
         let currentFilter = 'all';
         let allNotifs = [];
+        let selectedIds = new Set();
 
         async function loadNotifs() {
             try {
@@ -52,21 +60,30 @@
         function renderNotifs() {
             const filtered = currentFilter === 'unread' ? allNotifs.filter(n => !n.is_read) : allNotifs;
             const container = document.getElementById('notifListFull');
+            selectedIds.clear();
+            updateBulkToolbar();
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="empty-state"><h3>No notifications</h3><p>You\'re all caught up!</p></div>';
                 return;
             }
-            container.innerHTML = filtered.map(n => {
+            container.innerHTML = `
+                <div class="select-all-row">
+                    <input type="checkbox" class="item-select" id="selectAll" onchange="toggleSelectAll(this.checked)">
+                    <span>Select All</span>
+                </div>
+            ` + filtered.map(n => {
                 const icon = notifTypeIcons[n.type] || 'fa-bell';
                 const timeAgo = getTimeAgo(n.created_at);
                 return `
-                    <div class="notif-page-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick(${n.id}, '${n.link || ''}')">
+                    <div class="notif-page-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}">
+                        <input type="checkbox" class="item-select" value="${n.id}" onchange="toggleSelect(${n.id}, this.checked)">
                         <div class="notif-item-icon ${n.type}"><i class="fas ${icon}"></i></div>
-                        <div class="notif-item-body">
+                        <div class="notif-item-body" onclick="handleNotifClick(${n.id}, '${n.link || ''}')" style="cursor:pointer;flex:1;">
                             <div class="notif-item-title">${n.title}</div>
                             <div class="notif-item-msg" style="white-space:normal;">${n.message}</div>
                             <div class="notif-item-time">${timeAgo}</div>
                         </div>
+                        <button class="delete-icon" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Delete"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
             }).join('');
@@ -77,6 +94,59 @@
             document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
             renderNotifs();
+        }
+
+        function toggleSelectAll(checked) {
+            document.querySelectorAll('.notif-page-item .item-select').forEach(cb => {
+                cb.checked = checked;
+                const id = parseInt(cb.value);
+                if (checked) selectedIds.add(id); else selectedIds.delete(id);
+            });
+            updateBulkToolbar();
+        }
+
+        function toggleSelect(id, checked) {
+            if (checked) selectedIds.add(id); else selectedIds.delete(id);
+            const all = document.querySelectorAll('.notif-page-item .item-select');
+            document.getElementById('selectAll').checked = selectedIds.size === all.length;
+            updateBulkToolbar();
+        }
+
+        function updateBulkToolbar() {
+            const toolbar = document.getElementById('bulkToolbar');
+            const count = document.getElementById('selectedCount');
+            if (selectedIds.size > 0) {
+                toolbar.classList.remove('hidden');
+                count.textContent = selectedIds.size;
+            } else {
+                toolbar.classList.add('hidden');
+            }
+        }
+
+        function clearSelection() {
+            selectedIds.clear();
+            document.querySelectorAll('.item-select').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+            updateBulkToolbar();
+        }
+
+        async function deleteNotif(id) {
+            if (!confirm('Delete this notification?')) return;
+            try {
+                await api.delete('/notifications/' + id);
+                loadNotifs();
+                fetchUnreadCount();
+            } catch(e) { showNotification('Failed to delete', 'error'); }
+        }
+
+        async function bulkDeleteNotifs() {
+            if (!confirm(`Delete ${selectedIds.size} notification(s)?`)) return;
+            try {
+                await api.post('/notifications/bulk-delete', { ids: Array.from(selectedIds) });
+                showNotification('Deleted successfully', 'success');
+                loadNotifs();
+                fetchUnreadCount();
+            } catch(e) { showNotification('Failed to delete', 'error'); }
         }
 
         loadNotifs();

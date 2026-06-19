@@ -957,6 +957,43 @@ textarea.form-control {
 
 .compose-form { max-width: 600px; }
 
+/* ===== DELETE & BULK SELECT ===== */
+.item-select {
+    width: 18px; height: 18px; cursor: pointer; accent-color: var(--neon-pink);
+    flex-shrink: 0; margin-top: 2px;
+}
+.bulk-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; background: rgba(233, 30, 99, 0.08);
+    border: 1px solid rgba(233, 30, 99, 0.2); border-radius: var(--radius-sm);
+    margin-bottom: 16px; gap: 12px;
+}
+.bulk-toolbar.hidden { display: none; }
+.bulk-toolbar-info { font-size: 0.85rem; color: var(--text-primary); font-weight: 600; }
+.bulk-toolbar-actions { display: flex; gap: 8px; }
+.btn-delete-sm {
+    padding: 6px 14px; border-radius: var(--radius-sm); font-size: 0.78rem;
+    font-weight: 600; cursor: pointer; transition: var(--transition);
+    border: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-delete-sm.danger { background: var(--danger); color: white; }
+.btn-delete-sm.danger:hover { background: #e53935; transform: translateY(-1px); }
+.btn-delete-sm.outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+.btn-delete-sm.outline:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.delete-icon {
+    color: var(--text-muted); cursor: pointer; padding: 4px 6px;
+    border-radius: 4px; transition: var(--transition); font-size: 0.85rem;
+    background: none; border: none;
+}
+.delete-icon:hover { color: var(--danger); background: rgba(255, 82, 82, 0.1); }
+.notif-page-item, .msg-item { position: relative; }
+.notif-page-item .item-select, .msg-item .item-select { position: absolute; left: 12px; top: 18px; }
+.notif-page-item .notif-item-icon, .msg-item .msg-avatar { margin-left: 28px; }
+.select-all-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+    border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-secondary);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .sidebar {

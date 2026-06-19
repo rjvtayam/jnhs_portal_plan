@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sqlfunc
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel
 from app.database import get_db
 from app.models.notification import Notification
 from app.models.user import User
@@ -89,3 +90,38 @@ def mark_all_read(
     ).update({"is_read": True})
     db.commit()
     return {"message": "All notifications marked as read"}
+
+
+class BulkDeleteRequest(BaseModel):
+    ids: List[int]
+
+
+@router.delete("/{notification_id}")
+def delete_notification(
+    notification_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    notif = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == user.id,
+    ).first()
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    db.delete(notif)
+    db.commit()
+    return {"message": "Notification deleted"}
+
+
+@router.post("/bulk-delete")
+def bulk_delete_notifications(
+    req: BulkDeleteRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    deleted = db.query(Notification).filter(
+        Notification.id.in_(req.ids),
+        Notification.user_id == user.id,
+    ).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted} notifications deleted"}

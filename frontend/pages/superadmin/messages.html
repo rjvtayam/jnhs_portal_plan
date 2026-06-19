@@ -25,6 +25,13 @@
                     <button class="msg-tab active" onclick="switchFolder('inbox', this)"><i class="fas fa-inbox"></i> Inbox</button>
                     <button class="msg-tab" onclick="switchFolder('sent', this)"><i class="fas fa-paper-plane"></i> Sent</button>
                 </div>
+                <div class="bulk-toolbar hidden" id="bulkToolbar">
+                    <div class="bulk-toolbar-info"><span id="selectedCount">0</span> selected</div>
+                    <div class="bulk-toolbar-actions">
+                        <button class="btn-delete-sm outline" onclick="clearSelection()"><i class="fas fa-times"></i> Cancel</button>
+                        <button class="btn-delete-sm danger" onclick="bulkDeleteMsgs()"><i class="fas fa-trash"></i> Delete Selected</button>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-body" id="msgList">
                         <p class="text-secondary">Loading messages...</p>
@@ -85,12 +92,16 @@
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
     <script>
         initDashboard('superadmin-messages');
         startMsgPolling();
         let currentFolder = 'inbox';
         let currentViewSenderId = null;
         let currentViewSubject = '';
+        let selectedIds = new Set();
 
         async function loadRecipients() {
             try {
@@ -105,17 +116,24 @@
             try {
                 const msgs = await api.get(`/messages?folder=${currentFolder}&limit=100`) || [];
                 const container = document.getElementById('msgList');
+                selectedIds.clear();
+                updateBulkToolbar();
                 if (msgs.length === 0) {
                     container.innerHTML = '<div class="empty-state"><h3>No messages</h3><p>Your ' + currentFolder + ' is empty.</p></div>';
                     return;
                 }
-                container.innerHTML = msgs.map(m => {
+                container.innerHTML = `
+                    <div class="select-all-row">
+                        <input type="checkbox" class="item-select" id="selectAll" onchange="toggleSelectAll(this.checked)">
+                        <span>Select All</span>
+                    </div>
+                ` + msgs.map(m => {
                     const name = currentFolder === 'inbox' ? (m.sender_username || 'Unknown') : (m.recipient_username || 'Unknown');
-                    const initial = name.charAt(0).toUpperCase();
                     return `
-                        <div class="msg-item ${m.is_read ? '' : 'unread'}" onclick="viewMessage(${m.id}, '${btoa(encodeURIComponent(m.subject))}', '${btoa(encodeURIComponent(m.body))}', '${btoa(encodeURIComponent(name))}', '${m.created_at || ''}', ${m.sender_id})">
+                        <div class="msg-item ${m.is_read ? '' : 'unread'}" data-id="${m.id}">
+                            <input type="checkbox" class="item-select" value="${m.id}" onchange="toggleSelect(${m.id}, this.checked)">
                             <div class="msg-avatar"><i class="fas fa-user"></i></div>
-                            <div class="msg-body">
+                            <div class="msg-body" onclick="viewMessage(${m.id}, '${btoa(encodeURIComponent(m.subject))}', '${btoa(encodeURIComponent(m.body))}', '${btoa(encodeURIComponent(name))}', '${m.created_at || ''}', ${m.sender_id})" style="cursor:pointer;flex:1;">
                                 <div class="msg-header">
                                     <span class="msg-from">${name}</span>
                                     <span class="msg-time">${getTimeAgo(m.created_at)}</span>
@@ -123,6 +141,7 @@
                                 <div class="msg-subject">${m.subject}</div>
                                 <div class="msg-preview">${m.body.substring(0, 80)}${m.body.length > 80 ? '...' : ''}</div>
                             </div>
+                            <button class="delete-icon" onclick="event.stopPropagation();deleteMsg(${m.id})" title="Delete"><i class="fas fa-trash"></i></button>
                         </div>
                     `;
                 }).join('');
@@ -157,12 +176,9 @@
 
         async function replyToMessage() {
             hideModal('viewModal');
-            // Pre-fill compose modal with reply info
-            const sel = document.getElementById('msgRecipient');
-            // Load recipients first, then set value
             await loadRecipients();
             if (currentViewSenderId) {
-                sel.value = currentViewSenderId;
+                document.getElementById('msgRecipient').value = currentViewSenderId;
             }
             document.getElementById('msgSubject').value = currentViewSubject.startsWith('Re: ') ? currentViewSubject : 'Re: ' + currentViewSubject;
             document.getElementById('msgBody').value = '';
@@ -189,6 +205,59 @@
             } catch(e) {
                 showNotification(e.message || 'Failed to send message', 'error');
             }
+        }
+
+        function toggleSelectAll(checked) {
+            document.querySelectorAll('.msg-item .item-select').forEach(cb => {
+                cb.checked = checked;
+                const id = parseInt(cb.value);
+                if (checked) selectedIds.add(id); else selectedIds.delete(id);
+            });
+            updateBulkToolbar();
+        }
+
+        function toggleSelect(id, checked) {
+            if (checked) selectedIds.add(id); else selectedIds.delete(id);
+            const all = document.querySelectorAll('.msg-item .item-select');
+            document.getElementById('selectAll').checked = selectedIds.size === all.length;
+            updateBulkToolbar();
+        }
+
+        function updateBulkToolbar() {
+            const toolbar = document.getElementById('bulkToolbar');
+            const count = document.getElementById('selectedCount');
+            if (selectedIds.size > 0) {
+                toolbar.classList.remove('hidden');
+                count.textContent = selectedIds.size;
+            } else {
+                toolbar.classList.add('hidden');
+            }
+        }
+
+        function clearSelection() {
+            selectedIds.clear();
+            document.querySelectorAll('.item-select').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+            updateBulkToolbar();
+        }
+
+        async function deleteMsg(id) {
+            if (!confirm('Delete this message?')) return;
+            try {
+                await api.delete('/messages/' + id);
+                loadMessages();
+                fetchMsgUnreadCount();
+            } catch(e) { showNotification('Failed to delete', 'error'); }
+        }
+
+        async function bulkDeleteMsgs() {
+            if (!confirm(`Delete ${selectedIds.size} message(s)?`)) return;
+            try {
+                await api.post('/messages/bulk-delete', { ids: Array.from(selectedIds) });
+                showNotification('Deleted successfully', 'success');
+                loadMessages();
+                fetchMsgUnreadCount();
+            } catch(e) { showNotification('Failed to delete', 'error'); }
         }
 
         loadRecipients();

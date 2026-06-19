@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel
 from app.database import get_db
 from app.models.message import Message
 from app.models.user import User
@@ -207,3 +208,21 @@ def delete_message(
     db.delete(msg)
     db.commit()
     return {"message": "Message deleted"}
+
+
+class BulkDeleteRequest(BaseModel):
+    ids: List[int]
+
+
+@router.post("/bulk-delete")
+def bulk_delete_messages(
+    req: BulkDeleteRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    deleted = db.query(Message).filter(
+        Message.id.in_(req.ids),
+        (Message.sender_id == user.id) | (Message.recipient_id == user.id),
+    ).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted} messages deleted"}
