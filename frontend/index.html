@@ -870,35 +870,37 @@
         window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
 
         // ===== LEAFLET MAP - SATELLITE =====
-        // Jomalig Island center coordinates
-        const jomaligLat = 14.2800;
-        const jomaligLng = 122.3000;
-        // JNHS exact pin location
-        const jnhsLat = 14.2883;
-        const jnhsLng = 122.3106;
+        // Jomalig Island center (from exact bounding box)
+        const jomaligCenter = [14.7041, 122.3732];
+        // JNHS pinned on the island
+        const jnhsLat = 14.7050;
+        const jnhsLng = 122.3700;
 
         const map = L.map('jnhsMap', {
             zoomControl: true,
             attributionControl: false,
-        }).setView([jomaligLat, jomaligLng], 13);
+        }).setView(jomaligCenter, 13);
 
-        // Satellite tiles (Esri World Imagery - free)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
-        }).addTo(map);
+        // Try multiple satellite tile sources
+        const satelliteTiles = [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        ];
+
+        L.tileLayer(satelliteTiles[0], { maxZoom: 19 }).addTo(map);
 
         // Custom marker for JNHS
         const pinkIcon = L.divIcon({
             className: 'custom-pin',
-            html: '<div style="width:40px;height:40px;background:linear-gradient(135deg,#e91e63,#7c4dff);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(233,30,99,0.4);border:3px solid white;"><i class="fas fa-graduation-cap" style="color:white;font-size:15px;transform:rotate(45deg);"></i></div>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40],
+            html: '<div style="width:42px;height:42px;background:linear-gradient(135deg,#e91e63,#7c4dff);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(233,30,99,0.5);border:3px solid white;"><i class="fas fa-graduation-cap" style="color:white;font-size:16px;transform:rotate(45deg);"></i></div>',
+            iconSize: [42, 42],
+            iconAnchor: [21, 42],
+            popupAnchor: [0, -42],
         });
 
         L.marker([jnhsLat, jnhsLng], { icon: pinkIcon })
             .addTo(map)
-            .bindPopup('<div style="text-align:center;font-family:Inter,sans-serif;"><strong style="color:#e91e63;">Jomalig National High School</strong><br><span style="font-size:0.82rem;color:#5a6072;">Jomalig, Quezon | School ID: 301366</span></div>')
+            .bindPopup('<div style="text-align:center;font-family:Inter,sans-serif;"><strong style="color:#e91e63;font-size:1rem;">Jomalig National High School</strong><br><span style="font-size:0.82rem;color:#5a6072;">Jomalig Island, Quezon | School ID: 301366</span></div>')
             .openPopup();
 
         // Fix map rendering on load
