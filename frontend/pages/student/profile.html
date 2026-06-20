@@ -10,30 +10,20 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon_io/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/main.css">
     <style>
-        .profile-header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
-            color: white; border-radius: 12px; padding: 40px; margin-bottom: 20px;
-            display: flex; gap: 30px; align-items: center;
-        }
-        .profile-avatar {
-            width: 100px; height: 100px; background: rgba(255,255,255,0.2);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: 700; flex-shrink: 0;
-        }
+        .profile-header { background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); color: white; border-radius: 12px; padding: 40px; margin-bottom: 20px; display: flex; gap: 30px; align-items: center; }
+        .profile-avatar { width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; flex-shrink: 0; overflow: hidden; position: relative; cursor: pointer; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar:hover .avatar-overlay { opacity: 1; }
+        .avatar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: #fff; font-size: 0.7rem; }
         .profile-info h2 { margin-bottom: 5px; }
         .profile-info p { opacity: 0.8; margin-bottom: 3px; }
-        .info-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .info-card {
-            background: white; border-radius: 10px; padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .info-card h4 { color: #1e3a5f; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color); }
-        .info-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .info-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
+        .info-card h4 { color: var(--text-primary); margin-bottom: 10px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-light); }
+        .info-label { color: var(--text-muted); font-size: 0.9rem; }
         .info-value { font-weight: 500; text-align: right; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -41,16 +31,16 @@
         <aside class="sidebar"></aside>
         <main class="main-content">
             <div class="topbar">
-                <div class="topbar-title">
-                    <h1>My Profile</h1>
-                </div>
-                <div class="topbar-actions">
-                    <span class="user-info"></span>
-                </div>
+                <div class="topbar-title"><h1>My Profile</h1></div>
+                <div class="topbar-actions"><span class="user-info"></span></div>
             </div>
             <div class="content">
                 <div class="profile-header">
-                    <div class="profile-avatar" id="avatarInitials">-</div>
+                    <div class="profile-avatar" id="avatarInitials" onclick="document.getElementById('photoInput').click()">
+                        <span id="avatarText">-</span>
+                        <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
                     <div class="profile-info">
                         <h2 id="profileName">Loading...</h2>
                         <p>LRN: <span id="profileLRN">-</span></p>
@@ -60,14 +50,13 @@
 
                 <div class="info-grid">
                     <div class="info-card">
-                        <h4>Personal Information</h4>
+                        <h4>Personal Information (Read-only)</h4>
                         <div class="info-row"><span class="info-label">First Name</span><span class="info-value" id="firstName">-</span></div>
                         <div class="info-row"><span class="info-label">Middle Name</span><span class="info-value" id="middleName">-</span></div>
                         <div class="info-row"><span class="info-label">Last Name</span><span class="info-value" id="lastName">-</span></div>
                         <div class="info-row"><span class="info-label">Extension</span><span class="info-value" id="extension">-</span></div>
                         <div class="info-row"><span class="info-label">Gender</span><span class="info-value" id="gender">-</span></div>
                         <div class="info-row"><span class="info-label">Date of Birth</span><span class="info-value" id="dob">-</span></div>
-                        <div class="info-row"><span class="info-label">Contact</span><span class="info-value" id="contact">-</span></div>
                     </div>
 
                     <div class="info-card">
@@ -77,65 +66,107 @@
                         <div class="info-row"><span class="info-label">Section</span><span class="info-value" id="sectionName">-</span></div>
                         <div class="info-row"><span class="info-label">Track</span><span class="info-value" id="trackName">-</span></div>
                         <div class="info-row"><span class="info-label">School Year</span><span class="info-value" id="schoolYear">-</span></div>
-                        <div class="info-row"><span class="info-label">Status</span><span class="info-value" id="status">-</span></div>
                     </div>
 
                     <div class="info-card">
-                        <h4>Address</h4>
-                        <div class="info-row"><span class="info-label">Address</span><span class="info-value" id="address">-</span></div>
+                        <h4>Contact Information (Editable)</h4>
+                        <div class="form-group"><label>Contact Number</label><input type="text" class="form-control" id="editContact"></div>
+                        <div class="form-group"><label>Address</label><input type="text" class="form-control" id="editAddress"></div>
+                        <div class="form-group"><label>Guardian Name</label><input type="text" class="form-control" id="editGuardianName"></div>
+                        <div class="form-group"><label>Guardian Contact</label><input type="text" class="form-control" id="editGuardianContact"></div>
+                        <button class="btn btn-primary" onclick="saveProfile()" style="margin-top:10px;">Save Changes</button>
                     </div>
+                </div>
 
-                    <div class="info-card">
-                        <h4>Guardian Information</h4>
-                        <div class="info-row"><span class="info-label">Guardian Name</span><span class="info-value" id="guardianName">-</span></div>
-                        <div class="info-row"><span class="info-label">Contact</span><span class="info-value" id="guardianContact">-</span></div>
+                <div class="info-card" style="margin-top:20px;">
+                    <h4>Security</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-outline" onclick="showModal('passwordModal')"><i class="fas fa-key" style="margin-right:6px;"></i>Change Password</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    <script src="/js/api.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/utils.js"></script>
+    <div class="modal" id="passwordModal">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="modal-header"><h3>Change Password</h3><button class="modal-close" onclick="hideModal('passwordModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>Current Password</label><input type="password" class="form-control" id="currentPassword" required></div>
+                <div class="form-group"><label>New Password</label><input type="password" class="form-control" id="newPassword" required minlength="6"></div>
+                <div class="form-group"><label>Confirm New Password</label><input type="password" class="form-control" id="confirmPassword" required minlength="6"></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('passwordModal')">Cancel</button><button class="btn btn-primary" onclick="changePassword()">Update Password</button></div>
+        </div>
+    </div>
+    <script src="/js/api.js"></script><script src="/js/auth.js"></script><script src="/js/utils.js"></script>
     <script>
         initDashboard('profile');
-
         async function loadProfile() {
             try {
-                const data = await api.get('/student/dashboard');
-                const s = data.student;
-
-                const initials = `${(s.first_name || '')[0] || ''}${(s.last_name || '')[0] || ''}`.toUpperCase();
-                document.getElementById('avatarInitials').textContent = initials;
-                document.getElementById('profileName').textContent = `${s.last_name}, ${s.first_name} ${s.middle_name || ''}`;
-                document.getElementById('profileLRN').textContent = s.lrn;
-                document.getElementById('profileGrade').textContent = data.section ? data.section.grade_level : '-';
-                document.getElementById('profileSection').textContent = data.section ? data.section.name : '-';
-
-                document.getElementById('firstName').textContent = s.first_name || '-';
-                document.getElementById('middleName').textContent = s.middle_name || '-';
-                document.getElementById('lastName').textContent = s.last_name || '-';
-                document.getElementById('extension').textContent = s.extension_name || 'N/A';
-                document.getElementById('gender').textContent = s.gender || '-';
-                document.getElementById('dob').textContent = s.birth_date || '-';
-                document.getElementById('contact').textContent = s.contact_number || '-';
-
-                document.getElementById('lrnValue').textContent = s.lrn || '-';
-                document.getElementById('gradeLevel').textContent = data.section ? data.section.grade_level : '-';
-                document.getElementById('sectionName').textContent = data.section ? data.section.name : '-';
-                document.getElementById('trackName').textContent = data.section && data.section.track ? data.section.track : 'N/A';
-                document.getElementById('schoolYear').textContent = s.school_year || '-';
-                document.getElementById('status').textContent = s.status || '-';
-
-                document.getElementById('address').textContent = s.address || '-';
-
-                document.getElementById('guardianName').textContent = s.guardian_name || '-';
-                document.getElementById('guardianContact').textContent = s.guardian_contact || '-';
-            } catch (err) {
-                console.error(err);
-            }
+                const data = await api.get('/profile/');
+                const a = data.academic || {};
+                const avatar = document.getElementById('avatarInitials');
+                const avatarText = document.getElementById('avatarText');
+                if (data.profile_picture) { avatarText.style.display = 'none'; avatar.insertAdjacentHTML('afterbegin', `<img src="/uploads/profiles/${data.profile_picture}" alt="Profile">`); }
+                else { avatarText.textContent = `${(a.first_name || '')[0] || ''}${(a.last_name || '')[0] || ''}`.toUpperCase(); }
+                document.getElementById('profileName').textContent = `${a.last_name || ''}, ${a.first_name || ''} ${a.middle_name || ''}`;
+                document.getElementById('profileLRN').textContent = a.lrn || '-';
+                document.getElementById('profileGrade').textContent = a.grade_level || '-';
+                document.getElementById('profileSection').textContent = a.section_name || '-';
+                document.getElementById('firstName').textContent = a.first_name || '-';
+                document.getElementById('middleName').textContent = a.middle_name || '-';
+                document.getElementById('lastName').textContent = a.last_name || '-';
+                document.getElementById('extension').textContent = a.extension_name || 'N/A';
+                document.getElementById('gender').textContent = a.gender || '-';
+                document.getElementById('dob').textContent = a.birth_date || '-';
+                document.getElementById('lrnValue').textContent = a.lrn || '-';
+                document.getElementById('gradeLevel').textContent = a.grade_level || '-';
+                document.getElementById('sectionName').textContent = a.section_name || '-';
+                document.getElementById('trackName').textContent = a.track || 'N/A';
+                document.getElementById('schoolYear').textContent = a.school_year || '-';
+                document.getElementById('editContact').value = a.contact_number || '';
+                document.getElementById('editAddress').value = a.address || '';
+                document.getElementById('editGuardianName').value = a.guardian_name || '';
+                document.getElementById('editGuardianContact').value = a.guardian_contact || '';
+            } catch (err) { console.error(err); }
         }
-
+        async function saveProfile() {
+            try {
+                await api.put('/profile/', {
+                    contact_number: document.getElementById('editContact').value,
+                    address: document.getElementById('editAddress').value,
+                    guardian_name: document.getElementById('editGuardianName').value,
+                    guardian_contact: document.getElementById('editGuardianContact').value,
+                });
+                showNotification('Profile updated successfully');
+            } catch (err) { showNotification(err.message || 'Error', 'error'); }
+        }
+        async function uploadPhoto(input) {
+            const file = input.files[0]; if (!file) return;
+            const formData = new FormData(); formData.append('file', file);
+            try {
+                const token = localStorage.getItem('jnhs_token');
+                const resp = await fetch('/api/profile/picture', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+                if (!resp.ok) { const e = await resp.json(); throw new Error(e.detail); }
+                const result = await resp.json();
+                const avatar = document.getElementById('avatarInitials');
+                const existing = avatar.querySelector('img'); if (existing) existing.remove();
+                document.getElementById('avatarText').style.display = 'none';
+                avatar.insertAdjacentHTML('afterbegin', `<img src="${result.profile_picture}" alt="Profile">`);
+                showNotification('Profile picture updated');
+            } catch (err) { showNotification(err.message || 'Error', 'error'); }
+        }
+        async function changePassword() {
+            const c = document.getElementById('currentPassword').value, n = document.getElementById('newPassword').value, cf = document.getElementById('confirmPassword').value;
+            if (!c || !n || !cf) { showNotification('Fill all fields', 'error'); return; }
+            if (n !== cf) { showNotification('Passwords do not match', 'error'); return; }
+            if (n.length < 6) { showNotification('Min 6 characters', 'error'); return; }
+            try {
+                await api.post(`/auth/change-password?current_password=${encodeURIComponent(c)}&new_password=${encodeURIComponent(n)}`);
+                showNotification('Password changed'); hideModal('passwordModal');
+                document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = '';
+            } catch (err) { showNotification(err.message || 'Error', 'error'); }
+        }
         loadProfile();
     </script>
 </body>

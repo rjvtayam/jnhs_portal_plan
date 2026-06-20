@@ -10,7 +10,7 @@ from app.routes import (
     system_router, principal_router,
     registrar_router, student_portal_router, parent_portal_router,
     teacher_portal_router, notifications_router, messages_router,
-    activity_router,
+    activity_router, profile_router,
 )
 
 settings = get_settings()
@@ -60,12 +60,18 @@ app.include_router(teacher_portal_router)
 app.include_router(notifications_router)
 app.include_router(messages_router)
 app.include_router(activity_router)
+app.include_router(profile_router)
 
 
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy", "app": settings.APP_NAME}
 
+
+# Mount uploads directory
+uploads_path = Path(__file__).parent.parent / "uploads"
+if uploads_path.exists():
+    app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
 
 # Mount frontend static files
 frontend_path = Path(__file__).parent.parent.parent / "frontend"

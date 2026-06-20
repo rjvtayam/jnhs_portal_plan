@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest
@@ -70,6 +71,9 @@ def login(credentials: LoginRequest, request: Request, db: Session = Depends(get
 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is deactivated")
+
+    user.last_login = datetime.utcnow()
+    db.commit()
 
     token = create_access_token(data={"sub": str(user.id), "role": user.role})
 

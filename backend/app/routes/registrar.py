@@ -430,3 +430,46 @@ def download_sf10(
         return FileResponse(filepath, media_type="application/pdf", filename=filename)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/students/{student_id}/toggle-active")
+def toggle_student_active(
+    student_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("registrar")),
+):
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if not student.user_id:
+        raise HTTPException(status_code=400, detail="Student has no linked user account")
+
+    target_user = db.query(User).filter(User.id == student.user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Linked user account not found")
+
+    target_user.is_active = not target_user.is_active
+    db.commit()
+    return {"is_active": target_user.is_active, "message": f"Account {'activated' if target_user.is_active else 'deactivated'}"}
+
+
+@router.post("/parents/{parent_id}/toggle-active")
+def toggle_parent_active(
+    parent_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("registrar")),
+):
+    from app.models.parent import Parent
+    parent = db.query(Parent).filter(Parent.id == parent_id).first()
+    if not parent:
+        raise HTTPException(status_code=404, detail="Parent not found")
+    if not parent.user_id:
+        raise HTTPException(status_code=400, detail="Parent has no linked user account")
+
+    target_user = db.query(User).filter(User.id == parent.user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Linked user account not found")
+
+    target_user.is_active = not target_user.is_active
+    db.commit()
+    return {"is_active": target_user.is_active, "message": f"Account {'activated' if target_user.is_active else 'deactivated'}"}

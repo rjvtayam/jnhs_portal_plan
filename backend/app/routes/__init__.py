@@ -15,6 +15,7 @@ from app.routes.teacher_portal import router as teacher_portal_router
 from app.routes.notifications import router as notifications_router
 from app.routes.messages import router as messages_router
 from app.routes.activity import router as activity_router
+from app.routes.profile import router as profile_router
 
 __all__ = [
     "auth_router",
@@ -34,4 +35,5 @@ __all__ = [
     "notifications_router",
     "messages_router",
     "activity_router",
+    "profile_router",
 ]

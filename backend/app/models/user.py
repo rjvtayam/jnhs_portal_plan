@@ -24,6 +24,7 @@ class User(Base):
     role = Column(String(20), nullable=False)
     email = Column(String(100))
     is_active = Column(Boolean, default=True)
+    profile_picture = Column(String(255))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True))
 

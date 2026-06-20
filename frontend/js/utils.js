@@ -172,6 +172,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-envelope"></i></span> Messages
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="/pages/superadmin/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
+                </a>
+            </div>
         `,
         principal: `
             <div class="nav-section">
@@ -202,6 +208,12 @@ function renderSidebar(activePage) {
                 </a>
                 <a href="/pages/principal/messages.html" class="nav-item ${activePage === 'principal-messages' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="/pages/principal/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
                 </a>
             </div>
         `,
@@ -251,6 +263,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-envelope"></i></span> Messages
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="/pages/admin/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
+                </a>
+            </div>
         `,
         registrar: `
             <div class="nav-section">
@@ -292,6 +310,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-envelope"></i></span> Messages
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="/pages/registrar/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
+                </a>
+            </div>
         `,
         teacher: `
             <div class="nav-section">
@@ -319,6 +343,12 @@ function renderSidebar(activePage) {
                 </a>
                 <a href="/pages/teacher/messages.html" class="nav-item ${activePage === 'teacher-messages' ? 'active' : ''}">
                     <span class="icon"><i class="fas fa-envelope"></i></span> Messages
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="/pages/teacher/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
                 </a>
             </div>
         `,
@@ -367,6 +397,12 @@ function renderSidebar(activePage) {
                     <span class="icon"><i class="fas fa-envelope"></i></span> Messages
                 </a>
             </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="/pages/parent/profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}">
+                    <span class="icon"><i class="fas fa-user-circle"></i></span> Profile
+                </a>
+            </div>
         `,
     };
 
@@ -400,8 +436,23 @@ function initDashboard(activePage) {
 
     const userInfo = document.querySelector('.user-info');
     if (userInfo) {
-        userInfo.innerHTML = `<i class="fas fa-user-circle" style="margin-right:6px;"></i>${user.username} (${capitalize(user.role)})`;
+        const profilePic = user.profile_picture;
+        const avatarHtml = profilePic
+            ? `<img src="/uploads/profiles/${profilePic}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">`
+            : `<i class="fas fa-user-circle" style="margin-right:6px;"></i>`;
+        userInfo.innerHTML = `${avatarHtml}${user.username} (${capitalize(user.role)})`;
     }
+
+    // Fetch latest profile picture from API
+    fetch('/api/profile/', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('jnhs_token')}` }
+    }).then(r => r.ok ? r.json() : null).then(data => {
+        if (data && data.profile_picture && userInfo) {
+            user.profile_picture = data.profile_picture;
+            Auth.setUser(user);
+            userInfo.innerHTML = `<img src="/uploads/profiles/${data.profile_picture}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">${user.username} (${capitalize(user.role)})`;
+        }
+    }).catch(() => {});
 
     // Inject notification bell into topbar-actions
     const topbarActions = document.querySelector('.topbar-actions');

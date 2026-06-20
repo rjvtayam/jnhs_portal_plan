@@ -248,3 +248,20 @@ def reset_user_password(
     target.password_hash = hash_password(body.password)
     db.commit()
     return {"message": "Password reset successfully"}
+
+
+@router.post("/users/{user_id}/toggle-active")
+def toggle_user_active(
+    user_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("super_admin")),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.role == "super_admin":
+        raise HTTPException(status_code=400, detail="Cannot deactivate super admin accounts")
+
+    target.is_active = not target.is_active
+    db.commit()
+    return {"is_active": target.is_active, "message": f"Account {'activated' if target.is_active else 'deactivated'}"}

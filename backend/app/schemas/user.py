@@ -16,6 +16,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    profile_picture: Optional[str] = None
     created_at: Optional[datetime] = None
 
     class Config:

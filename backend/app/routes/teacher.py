@@ -73,3 +73,24 @@ def update_teacher(
     db.commit()
     db.refresh(teacher)
     return teacher
+
+
+@router.post("/{teacher_id}/toggle-active")
+def toggle_teacher_active(
+    teacher_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("admin")),
+):
+    teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    if not teacher.user_id:
+        raise HTTPException(status_code=400, detail="Teacher has no linked user account")
+
+    target_user = db.query(User).filter(User.id == teacher.user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Linked user account not found")
+
+    target_user.is_active = not target_user.is_active
+    db.commit()
+    return {"is_active": target_user.is_active, "message": f"Account {'activated' if target_user.is_active else 'deactivated'}"}
